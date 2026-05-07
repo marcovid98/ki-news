@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI@VWC – KI-News Dashboard</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+  :root{--bg-base:#0a1628;--bg-surface:#0f1e32;--bg-card:#112240;--bg-card-hover:#15294d;--bg-input:#0c1a2e;--border:rgba(0,210,160,0.10);--border-hover:rgba(0,210,160,0.25);--border-card:rgba(0,210,160,0.08);--accent:#c8ff00;--accent-dim:rgba(200,255,0,0.12);--accent-text:#0a1628;--teal:#00d4aa;--label-color:#7aaa96;--text-primary:#e2eaf3;--text-secondary:#b0c4d8;--text-body:#a8bdd4;--text-muted:#4a6280;--text-count:#8a9fbb;--shadow:0 8px 32px rgba(0,0,0,0.4);--radius:14px;--radius-sm:8px;--radius-pill:20px;--font-sans:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;--font-mono:'JetBrains Mono','Consolas','Courier New',monospace}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:var(--font-sans);background:var(--bg-base);color:var(--text-primary);min-height:100vh;line-height:1.6}
+  ::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:var(--bg-base)}::-webkit-scrollbar-thumb{background:var(--text-muted);border-radius:3px}
+  .header{padding:36px 56px 30px;border-bottom:1px solid var(--border);position:relative;overflow:hidden}
+  .header::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;background:radial-gradient(ellipse at 70% 0%,rgba(0,212,170,0.06) 0%,transparent 60%),radial-gradient(ellipse at 0% 100%,rgba(200,255,0,0.03) 0%,transparent 50%);pointer-events:none}
+  .header-inner{display:flex;justify-content:space-between;align-items:flex-start;position:relative;z-index:1}
+  .header-brand{display:flex;align-items:center;gap:20px}
+  .brand-title{font-family:var(--font-mono);font-size:26px;font-weight:800;color:var(--accent);letter-spacing:-0.5px}
+  .brand-divider{width:1px;height:36px;background:var(--text-muted);opacity:0.4}
+  .brand-subtitle{font-size:15px;font-weight:500;color:var(--text-primary);letter-spacing:-0.2px}
+  .header-meta{display:flex;gap:16px;margin-top:14px;align-items:center}
+  .meta-tag{font-family:var(--font-mono);font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent-text);background:var(--accent);padding:3px 10px;border-radius:var(--radius-pill)}
+  .meta-date{font-size:13px;color:var(--text-muted);font-weight:400}
+  .vwc-logo{font-family:var(--font-mono);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:2px;color:var(--text-muted);border:1px solid rgba(0,210,160,0.15);padding:6px 14px;border-radius:var(--radius-sm)}
+  .toolbar{padding:20px 56px;background:var(--bg-surface);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+  .search-box{flex:1;min-width:260px;position:relative}
+  .search-box input{width:100%;padding:11px 18px 11px 44px;background:var(--bg-input);color:var(--text-primary);border:1px solid var(--border-card);border-radius:var(--radius-sm);font-family:var(--font-sans);font-size:13px;outline:none;transition:all 0.3s ease}
+  .search-box input:focus{border-color:rgba(200,255,0,0.3);box-shadow:0 0 0 3px rgba(200,255,0,0.06)}
+  .search-box input::placeholder{color:var(--text-muted)}
+  .search-icon{position:absolute;left:15px;top:50%;transform:translateY(-50%);font-size:14px;color:var(--text-muted);pointer-events:none}
+  .filter-chips{display:flex;gap:8px;flex-wrap:wrap}
+  .chip{font-family:var(--font-mono);padding:7px 16px;border-radius:var(--radius-pill);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.8px;cursor:pointer;border:1px solid rgba(0,210,160,0.15);background:transparent;color:var(--text-secondary);transition:all 0.25s ease;user-select:none}
+  .chip:hover{border-color:var(--accent);color:var(--accent);background:rgba(200,255,0,0.05)}
+  .chip.active{background:var(--accent);color:var(--accent-text);border-color:var(--accent)}
+  .dashboard{padding:32px 56px 56px;display:grid;grid-template-columns:1fr 1fr;gap:24px}
+  .category-card{background:var(--bg-card);border:1px solid var(--border-card);border-radius:var(--radius);overflow:hidden;transition:transform 0.3s ease,box-shadow 0.3s ease,border-color 0.3s ease;animation:fadeUp 0.5s ease forwards}
+  .category-card:nth-child(2){animation-delay:0.08s}.category-card:nth-child(3){animation-delay:0.16s}.category-card:nth-child(4){animation-delay:0.24s}
+  .category-card:hover{transform:translateY(-2px);box-shadow:var(--shadow);border-color:var(--border-hover)}
+  .card-header{padding:22px 28px 18px;border-bottom:1px solid var(--border)}
+  .card-label{font-family:var(--font-mono);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:var(--accent-text);background:var(--accent);display:inline-block;padding:3px 10px;border-radius:var(--radius-pill);margin-bottom:10px}
+  .card-title{font-size:16px;font-weight:700;color:var(--text-primary);letter-spacing:-0.3px;line-height:1.3}
+  .card-count{font-family:var(--font-mono);font-size:11px;color:var(--text-count);margin-top:6px;letter-spacing:0.5px}
+  .card-body{padding:4px 0}
+  .news-item{padding:18px 28px;border-bottom:1px solid var(--border);transition:background 0.2s ease}
+  .news-item:last-child{border-bottom:none}.news-item:hover{background:var(--bg-card-hover)}
+  .news-headline{font-size:14px;font-weight:700;color:#ffffff;margin-bottom:10px;line-height:1.45}
+  .news-field{font-size:12.5px;line-height:1.6;margin-bottom:5px;color:var(--text-body)}
+  .news-field .label{color:var(--label-color);font-style:italic;font-weight:600}
+  .news-source{font-size:11.5px;color:var(--text-body);margin-top:8px}
+  .news-source .label{color:var(--label-color);font-style:italic;font-weight:600}
+  .news-source a{color:var(--accent);text-decoration:none;transition:color 0.2s}
+  .news-source a:hover{color:#e0ff66;text-decoration:underline}
+  .footer{text-align:center;padding:28px 56px;border-top:1px solid var(--border);color:var(--text-muted);font-size:12px}
+  .powered{display:inline-flex;align-items:center;gap:8px;font-family:var(--font-mono);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent-text);background:var(--accent);padding:5px 16px;border-radius:var(--radius-pill);margin-bottom:10px}
+  .footer-text{font-size:12px;color:var(--text-muted);margin-top:4px}
+  @media(max-width:1100px){.dashboard{grid-template-columns:1fr;padding:24px 28px 40px}.header,.toolbar,.footer{padding-left:28px;padding-right:28px}}
+  @media(max-width:640px){.header{padding:24px 20px 20px}.brand-title{font-size:20px}.brand-divider{display:none}.dashboard{padding:16px 16px 32px;gap:16px}}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-inner">
+    <div>
+      <div class="header-brand">
+        <span class="brand-title">AI@VWC</span>
+        <div class="brand-divider"></div>
+        <span class="brand-subtitle">KI-News Dashboard</span>
+      </div>
+      <div class="header-meta">
+        <span class="meta-tag">Wöchentlich</span>
+        <span class="meta-date">📅 07. Mai 2026 · KW 19</span>
+      </div>
+    </div>
+    <div class="header-right">
+      <span class="vwc-logo">Volkswagen Group Consulting</span>
+    </div>
+  </div>
+</div>
+
+<div class="toolbar">
+  <div class="search-box">
+    <span class="search-icon">🔍</span>
+    <input type="text" id="searchInput" placeholder="News durchsuchen …" oninput="filterNews()">
+  </div>
+  <div class="filter-chips">
+    <span class="chip active" data-cat="all" onclick="filterCategory('all',this)">Alle</span>
+    <span class="chip" data-cat="1" onclick="filterCategory('1',this)">Enterprise</span>
+    <span class="chip" data-cat="2" onclick="filterCategory('2',this)">Automotive</span>
+    <span class="chip" data-cat="3" onclick="filterCategory('3',this)">Beratungen</span>
+    <span class="chip" data-cat="4" onclick="filterCategory('4',this)">VW Konzern</span>
+  </div>
+</div>
+
+<div class="dashboard">
+
+  <div class="category-card" data-cat="1">
+    <div class="card-header">
+      <div class="card-label">Kategorie 1</div>
+      <div class="card-title">Übergreifende KI- &amp; Enterprise-News</div>
+      <div class="card-count">3 News</div>
+    </div>
+    <div class="card-body">
+      <div class="news-item">
+        <div class="news-headline">Anthropic sichert sich SpaceX-Supercomputer – und plant orbitale KI-Rechenzentren</div>
+        <div class="news-field"><span class="label">Was ist passiert:</span> Anthropic hat einen Deal mit SpaceX geschlossen, der exklusiven Zugriff auf den Colossus-1-Supercomputer (220.000+ NVIDIA GPUs, 300 MW) gewährt – zudem wurde Interesse an der gemeinsamen Entwicklung orbitaler KI-Rechenkapazitäten im Gigawatt-Bereich bekundet.</div>
+        <div class="news-field"><span class="label">Warum relevant für VWC:</span> Zeigt die eskalierende Compute-Knappheit im KI-Markt und die zunehmende vertikale Integration der Foundation-Model-Anbieter – relevanter Kontext für Plattform- und Sourcing-Strategieberatung im Konzern.</div>
+        <div class="news-source"><span class="label">Quelle:</span> <a href="https://www.cnbc.com/2026/05/06/anthropic-spacex-data-center-capacity.html" target="_blank" rel="noopener noreferrer">CNBC, 06.05.2026</a></div>
+      </div>
+      <div class="news-item">
+        <div class="news-headline">OpenAI &amp; Anthropic gründen parallele Enterprise-JVs mit Wall-Street-Investoren</div>
+        <div class="news-field"><span class="label">Was ist passiert:</span> OpenAI hat mit TPG, Bain Capital und Brookfield „The Deployment Company“ (4 Mrd. USD) gegründet, Anthropic parallel mit Blackstone, Goldman Sachs und Hellman &amp; Friedman ein 1,5-Mrd.-JV – beide zielen auf Enterprise-KI-Implementierung in tausenden Portfolio-Unternehmen.</div>
+        <div class="news-field"><span class="label">Warum relevant für VWC:</span> KI-Labs bauen eigene Delivery-Arme auf und konkurrieren direkt mit klassischen Beratungen – VWC muss die eigene Positionierung im KI-Beratungsmarkt aktiv schärfen.</div>
+        <div class="news-source"><span class="label">Quelle:</span> <a href="https://techcrunch.com/2026/05/04/anthropic-and-openai-are-both-launching-joint-ventures-for-enterprise-ai-services/" target="_blank" rel="noopener noreferrer">TechCrunch, 04.05.2026</a></div>
+      </div>
+      <div class="news-item">
+        <div class="news-headline">Microsoft &amp; OpenAI beenden Cloud-Exklusivität – Multi-Cloud wird Standard</div>
+        <div class="news-field"><span class="label">Was ist passiert:</span> Microsoft und OpenAI haben ihre Partnerschaft neu strukturiert: Azure bleibt Primary Cloud, aber OpenAI darf Produkte über alle Cloud-Anbieter ausliefern; Microsofts IP-Lizenz wird nicht-exklusiv bis 2032.</div>
+        <div class="news-field"><span class="label">Warum relevant für VWC:</span> Die Verschiebung zu Multi-Cloud beeinflusst Sourcing- und Architekturstrategie in laufenden KI-Programmen – relevant für Vendor-Lock-in-Bewertung und Verhandlungshebel im Konzern.</div>
+        <div class="news-source"><span class="label">Quelle:</span> <a href="https://blogs.microsoft.com/blog/2026/04/27/the-next-phase-of-the-microsoft-openai-partnership/" target="_blank" rel="noopener noreferrer">Microsoft Official Blog, 27.04.2026</a></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="category-card" data-cat="2">
+    <div class="card-header">
+      <div class="card-label">Kategorie 2</div>
+      <div class="card-title">KI-News aus der Automobilindustrie</div>
+      <div class="card-count">2 News</div>
+    </div>
+    <div class="card-body">
+      <div class="news-item">
+        <div class="news-headline">Stellantis &amp; Microsoft starten 5-Jahres-Deal mit 100+ KI-Initiativen</div>
+        <div class="news-field"><span class="label">Was ist passiert:</span> Stellantis und Microsoft haben eine fünfjährige Zusammenarbeit zur Co-Entwicklung von über 100 KI-Initiativen in Produktentwicklung, Predictive Maintenance und Cyber-Defense auf Azure vereinbart – inklusive 60 % Datacenter-Reduktion bis 2029.</div>
+        <div class="news-field"><span class="label">Warum relevant für VWC:</span> Direkter Benchmark für „AI Operating Model“ im Automotive – zeigt, wie OEMs KI, Security und Cloud in ein Transformationsprogramm bündeln, relevant für Benchmarking und Angebotsgestaltung.</div>
+        <div class="news-source"><span class="label">Quelle:</span> <a href="https://www.stellantis.com/en/news/press-releases/2026/april/stellantis-accelerates-ai-led-strategy-and-digital-transformation-through-strategic-collaboration-with-microsoft-to-enhance-customer-experiences" target="_blank" rel="noopener noreferrer">Stellantis Pressemitteilung, 16.04.2026</a></div>
+      </div>
+      <div class="news-item">
+        <div class="news-headline">BMW startet 300-Mio.-Fund für Physical AI – Premium-OEMs skalieren KI in Produktion</div>
+        <div class="news-field"><span class="label">Was ist passiert:</span> BMW i Ventures hat einen dritten Fonds über 300 Mio. USD für Physical AI, Agentic AI und Industriesoftware aufgelegt; parallel setzen Audi, BMW und Mercedes KI-basierte Bildverarbeitung zur Echtzeit-Fehlererkennung in der Produktion produktiv ein.</div>
+        <div class="news-field"><span class="label">Warum relevant für VWC:</span> Wettbewerbsvergleich für VW-Produktionsprojekte und Signal, dass Physical AI als eigenständiges Investitionsfeld im Automotive etabliert wird – relevante Benchmarks für Beratungsmandate.</div>
+        <div class="news-source"><span class="label">Quelle:</span> <a href="https://www.pymnts.com/artificial-intelligence-2/2026/ai-takes-the-wheel-at-europes-biggest-carmakers/" target="_blank" rel="noopener noreferrer">PYMNTS / Automotive News, 01.05.2026</a></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="category-card" data-cat="3">
+    <div class="card-header">
+      <div class="card-label">Kategorie 3</div>
+      <div class="card-title">KI-News von Strategieberatungen</div>
+      <div class="card-count">2 News</div>
+    </div>
+    <div class="card-body">
+      <div class="news-item">
+        <div class="news-headline">OpenAI- und Anthropic-JVs planen Übernahmen von KI-Consulting-Firmen</div>
+        <div class="news-field"><span class="label">Was ist passiert:</span> Die neuen Joint Ventures von OpenAI und Anthropic verhandeln laut Reuters über Akquisitionen von Engineering- und Consulting-Firmen – OpenAI in fortgeschrittenen Gesprächen für drei Deals, um hunderte Berater für Enterprise-KI-Deployment einzubinden.</div>
+        <div class="news-field"><span class="label">Warum relevant für VWC:</span> KI-Labs konsolidieren den Beratungsmarkt und bauen eigene Delivery-Arme auf – direkter Wettbewerbsdruck auf klassische Beratungshäuser und strategische Implikation für VWC-Positionierung.</div>
+        <div class="news-source"><span class="label">Quelle:</span> <a href="https://money.usnews.com/investing/news/articles/2026-05-05/openai-anthropic-ventures-in-talks-to-buy-ai-services-firms-sources-say" target="_blank" rel="noopener noreferrer">Reuters, 05.05.2026</a></div>
+      </div>
+      <div class="news-item">
+        <div class="news-headline">Das 93/7-Problem: 93 % der KI-Budgets für Technologie, nur 7 % für Menschen</div>
+        <div class="news-field"><span class="label">Was ist passiert:</span> Neue Deloitte-Daten zeigen, dass 93 % der globalen KI-Budgets in Technologie fließen und nur 7 % in People &amp; Change – obwohl laut BCG 70 % des KI-Werts aus Menschen und Prozessen kommt; McKinsey bestätigt, dass nur 39 % der Unternehmen messbaren EBITDA-Impact sehen.</div>
+        <div class="news-field"><span class="label">Warum relevant für VWC:</span> Untermauert die VWC-Argumentation, dass KI-Beratung über Tool-Einführung hinausgehen muss – Change, Enablement und Prozessdesign sind die eigentlichen Werthebel, und genau dort liegt VWCs Stärke.</div>
+        <div class="news-source"><span class="label">Quelle:</span> <a href="https://www.forbes.com/councils/forbescoachescouncil/2026/05/06/the-937-problem-why-companies-are-spending-their-ai-budgets-backward/" target="_blank" rel="noopener noreferrer">Forbes / Deloitte / BCG, 06.05.2026</a></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="category-card" data-cat="4">
+    <div class="card-header">
+      <div class="card-label">Kategorie 4</div>
+      <div class="card-title">KI-News aus dem Volkswagen Konzern</div>
+      <div class="card-count">2 News</div>
+    </div>
+    <div class="card-body">
+      <div class="news-item">
+        <div class="news-headline">Volkswagen China bringt In-Car-KI-Agenten ab H2 2026 – On-Device-LLM mit Horizon Robotics</div>
+        <div class="news-field"><span class="label">Was ist passiert:</span> Volkswagen hat auf der Auto China 2026 KI-Agenten für den chinesischen Markt angekündigt, die Fahrzeugfunktionen per Sprache steuern – entwickelt über das JV CARIZON mit Horizon Robotics, Rollout in der zweiten Jahreshälfte 2026.</div>
+        <div class="news-field"><span class="label">Warum relevant für VWC:</span> Konkretes Signal für produktive Agentic-KI im Fahrzeug mit lokalem Souveränitätsansatz – relevant für Strategie-, Benchmark- und Enablement-Diskussionen rund um In-Car AI im Konzern.</div>
+        <div class="news-source"><span class="label">Quelle:</span> <a href="https://www.cnbc.com/2026/04/21/volkswagen-ai-agents-china-cars.html" target="_blank" rel="noopener noreferrer">CNBC, 21.04.2026</a></div>
+      </div>
+      <div class="news-item">
+        <div class="news-headline">Bosch &amp; CARIAD: KI-basierter Automated-Driving-Stack ab Mitte 2026 serienreif</div>
+        <div class="news-field"><span class="label">Was ist passiert:</span> Der gemeinsam von Bosch und CARIAD entwickelte End-to-End-KI-Stack für automatisiertes Fahren (Level 2/3) steht ab Mitte 2026 für Serienprojekte bereit – er wird in die neue Software-defined-Vehicle-Architektur des VW Konzerns integriert.</div>
+        <div class="news-field"><span class="label">Warum relevant für VWC:</span> Zentraler Meilenstein für KI-Serieneinsatz im Konzern und Beweis, dass die deutsche Automobilindustrie KI und automatisiertes Fahren eigenständig beherrscht – relevant für Use-Case-Priorisierung in Beratungsprojekten.</div>
+        <div class="news-source"><span class="label">Quelle:</span> <a href="https://cariad.technology/de/en/news/stories/automated-driving-alliance-ai-next-level.html" target="_blank" rel="noopener noreferrer">Volkswagen Group / CARIAD, 2026</a></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">
+  <div class="powered">⚡ Powered by Copilot Agent</div>
+  <div class="footer-text">Zuletzt aktualisiert: 07. Mai 2026, 09:51 Uhr · Volkswagen Group Consulting – CLK</div>
+</div>
+
+<script type="text/javascript">
+  var activeCategory='all';
+  function filterCategory(cat,el){activeCategory=cat;var chips=document.querySelectorAll('.chip');for(var i=0;i<chips.length;i++){chips[i].className='chip';}el.className='chip active';applyFilters();}
+  function filterNews(){applyFilters();}
+  function applyFilters(){var q=document.getElementById('searchInput').value.toLowerCase();var cards=document.querySelectorAll('.category-card');for(var c=0;c<cards.length;c++){var card=cards[c];var cat=card.getAttribute('data-cat');var catMatch=activeCategory==='all'||cat===activeCategory;if(!catMatch){card.style.display='none';continue;}var items=card.querySelectorAll('.news-item');var anyVisible=false;for(var i=0;i<items.length;i++){var text=items[i].textContent.toLowerCase();var match=!q||text.indexOf(q)>=0;items[i].style.display=match?'':'none';if(match)anyVisible=true;}card.style.display=anyVisible?'':'none';}}
+</script>
+</body>
+</html>
