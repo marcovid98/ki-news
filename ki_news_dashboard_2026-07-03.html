@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html lang="de" xmlns:mso="urn:schemas-microsoft-com:office:office" xmlns:msdt="uuid:C2F41010-65B3-11d1-A29F-00AA00C14882">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI@VWC – CLK KI-News Dashboard</title>
+<style>
+
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+  :root{--bg-base:#0a1628;--bg-surface:#0f1e32;--bg-card:#112240;--bg-card-hover:#15294d;--bg-input:#0c1a2e;--border:rgba(0,210,160,0.10);--border-hover:rgba(0,210,160,0.25);--border-card:rgba(0,210,160,0.08);--accent:#c8ff00;--accent-dim:rgba(200,255,0,0.12);--accent-text:#0a1628;--teal:#00d4aa;--label-color:#7aaa96;--text-primary:#e2eaf3;--text-secondary:#b0c4d8;--text-body:#a8bdd4;--text-muted:#4a6280;--text-count:#8a9fbb;--shadow:0 8px 32px rgba(0,0,0,0.4);--radius:14px;--radius-sm:8px;--radius-pill:20px;--font-sans:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;--font-mono:'JetBrains Mono','Consolas','Courier New',monospace}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:var(--font-sans);background:var(--bg-base);color:var(--text-primary);min-height:100vh;line-height:1.6}
+  ::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:var(--bg-base)}::-webkit-scrollbar-thumb{background:var(--text-muted);border-radius:3px}
+  .header{padding:36px 56px 30px;border-bottom:1px solid var(--border);position:relative;overflow:hidden}
+  .header::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;background:radial-gradient(ellipse at 70% 0%,rgba(0,212,170,0.06) 0%,transparent 60%),radial-gradient(ellipse at 0% 100%,rgba(200,255,0,0.03) 0%,transparent 50%);pointer-events:none}
+  .header-inner{display:flex;justify-content:space-between;align-items:flex-start;position:relative;z-index:1}
+  .header-brand{display:flex;align-items:center;gap:20px}
+  .brand-title{font-family:var(--font-mono);font-size:26px;font-weight:800;color:var(--accent);letter-spacing:-0.5px}
+  .brand-divider{width:1px;height:36px;background:var(--text-muted);opacity:0.4}
+  .brand-subtitle{font-size:15px;font-weight:500;color:var(--text-primary);letter-spacing:-0.2px}
+  .header-meta{display:flex;gap:16px;margin-top:14px;align-items:center}
+  .meta-tag{font-family:var(--font-mono);font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent-text);background:var(--accent);padding:3px 10px;border-radius:var(--radius-pill)}
+  .meta-date{font-size:13px;color:var(--text-muted);font-weight:400}
+  .vwc-logo{font-family:var(--font-mono);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:2px;color:var(--text-muted);border:1px solid rgba(0,210,160,0.15);padding:6px 14px;border-radius:var(--radius-sm)}
+  .toolbar{padding:20px 56px;background:var(--bg-surface);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+  .search-box{flex:1;min-width:260px;position:relative}
+  .search-box input{width:100%;padding:11px 18px 11px 44px;background:var(--bg-input);color:var(--text-primary);border:1px solid var(--border-card);border-radius:var(--radius-sm);font-family:var(--font-sans);font-size:13px;outline:none;transition:all 0.3s ease}
+  .search-box input:focus{border-color:rgba(200,255,0,0.3);box-shadow:0 0 0 3px rgba(200,255,0,0.06)}
+  .search-box input::placeholder{color:var(--text-muted)}
+  .search-icon{position:absolute;left:15px;top:50%;transform:translateY(-50%);font-size:14px;color:var(--text-muted);pointer-events:none}
+  .filter-chips{display:flex;gap:8px;flex-wrap:wrap}
+  .chip{font-family:var(--font-mono);padding:7px 16px;border-radius:var(--radius-pill);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.8px;cursor:pointer;border:1px solid rgba(0,210,160,0.15);background:transparent;color:var(--text-secondary);transition:all 0.25s ease;user-select:none}
+  .chip:hover{border-color:var(--accent);color:var(--accent);background:rgba(200,255,0,0.05)}
+  .chip.active{background:var(--accent);color:var(--accent-text);border-color:var(--accent)}
+  .dashboard{padding:32px 56px 56px;display:grid;grid-template-columns:1fr 1fr;gap:24px}
+  .category-card{background:var(--bg-card);border:1px solid var(--border-card);border-radius:var(--radius);overflow:hidden;transition:transform 0.3s ease,box-shadow 0.3s ease,border-color 0.3s ease;animation:fadeUp 0.5s ease forwards}
+  .category-card:nth-child(2){animation-delay:0.08s}.category-card:nth-child(3){animation-delay:0.16s}.category-card:nth-child(4){animation-delay:0.24s}
+  .category-card:hover{transform:translateY(-2px);box-shadow:var(--shadow);border-color:var(--border-hover)}
+  .card-header{padding:22px 28px 18px;border-bottom:1px solid var(--border)}
+  .card-label{font-family:var(--font-mono);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:var(--accent-text);background:var(--accent);display:inline-block;padding:3px 10px;border-radius:var(--radius-pill);margin-bottom:10px}
+  .card-title{font-size:16px;font-weight:700;color:var(--text-primary);letter-spacing:-0.3px;line-height:1.3}
+  .card-count{font-family:var(--font-mono);font-size:11px;color:var(--text-count);margin-top:6px;letter-spacing:0.5px}
+  .card-body{padding:4px 0}
+  .news-item{padding:18px 28px;border-bottom:1px solid var(--border);transition:background 0.2s ease}
+  .news-item:last-child{border-bottom:none}.news-item:hover{background:var(--bg-card-hover)}
+  .news-headline{font-size:14px;font-weight:700;color:#ffffff;margin-bottom:10px;line-height:1.45}
+  .news-field{font-size:12.5px;line-height:1.6;margin-bottom:5px;color:var(--text-body)}
+  .news-field .label{color:var(--label-color);font-style:italic;font-weight:600}
+  .news-source{font-size:11.5px;color:var(--text-body);margin-top:8px}
+  .news-source .label{color:var(--label-color);font-style:italic;font-weight:600}
+  .news-source a{color:var(--accent);text-decoration:none;transition:color 0.2s}
+  .news-source a:hover{color:#e0ff66;text-decoration:underline}
+  .footer{text-align:center;padding:28px 56px;border-top:1px solid var(--border);color:var(--text-muted);font-size:12px}
+  .powered{display:inline-flex;align-items:center;gap:8px;font-family:var(--font-mono);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent-text);background:var(--accent);padding:5px 16px;border-radius:var(--radius-pill);margin-bottom:10px}
+  .footer-text{font-size:12px;color:var(--text-muted);margin-top:4px}
+  @media(max-width:1100px){.dashboard{grid-template-columns:1fr;padding:24px 28px 40px}.header,.toolbar,.footer{padding-left:28px;padding-right:28px}}
+  @media(max-width:640px){.header{padding:24px 20px 20px}.brand-title{font-size:20px}.brand-divider{display:none}.dashboard{padding:16px 16px 32px;gap:16px}}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+
+  .header-right{display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+  .archive-container{display:flex;align-items:center;gap:10px;margin-top:4px}
+  .archive-label{font-family:var(--font-mono);font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--text-muted)}
+  .archive-select{font-family:var(--font-mono);font-size:11px;color:var(--teal);background:var(--bg-input);border:1px solid rgba(0,210,160,0.2);border-radius:var(--radius-sm);padding:7px 32px 7px 12px;appearance:none;-webkit-appearance:none;cursor:pointer;outline:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M3 4.5l3 3 3-3' stroke='%2300d4aa' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;transition:all 0.2s ease}
+  .archive-select:hover{border-color:rgba(0,210,160,0.5);background-color:rgba(0,210,160,0.04)}
+  .archive-select:focus{border-color:var(--teal);box-shadow:0 0 0 2px rgba(0,210,160,0.12)}
+  .archive-select option{background:var(--bg-card);color:var(--text-primary)}
+  .category-card.full-width{grid-column:1/-1}
+  .category-card:nth-child(5){animation-delay:0.32s}
+
+</style>
+
+<!--[if gte mso 9]><xml>
+<mso:CustomDocumentProperties>
+<mso:TaxCatchAll msdt:dt="string">2;#12.2 Strategy documents|8fe2e8d5-4b9e-4ee4-b058-e5a719c7f021</mso:TaxCatchAll>
+<mso:i0f84bba906045b4af568ee102a52dcb msdt:dt="string">12.2 Strategy documents|8fe2e8d5-4b9e-4ee4-b058-e5a719c7f021</mso:i0f84bba906045b4af568ee102a52dcb>
+<mso:RevIMComments msdt:dt="string"></mso:RevIMComments>
+<mso:RevIMExtends msdt:dt="string">{&quot;Locked&quot;:null,&quot;LockedBy&quot;:null,&quot;UnLocked&quot;:null,&quot;UnLockedBy&quot;:null,&quot;Classified&quot;:&quot;2026-06-15T13:34:07.152Z&quot;,&quot;KSUClass&quot;:&quot;8fe2e8d5-4b9e-4ee4-b058-e5a719c7f021&quot;,&quot;Reclassified&quot;:null,&quot;ReclassifiedBy&quot;:null,&quot;EDReclassified&quot;:null,&quot;EDReclassifiedBy&quot;:null,&quot;EventCreated&quot;:null,&quot;EventModified&quot;:null,&quot;EventDeleted&quot;:null,&quot;EventCreatedBy&quot;:null,&quot;EventModifiedBy&quot;:null,&quot;EventDeletedBy&quot;:null,&quot;Moved&quot;:null,&quot;MovedBy&quot;:null,&quot;MovedFrom&quot;:null,&quot;IsMoving&quot;:null,&quot;MoveStartTime&quot;:null}</mso:RevIMExtends>
+<mso:LegalHoldTag msdt:dt="string"></mso:LegalHoldTag>
+<mso:RevIMDeletionDate msdt:dt="string">2046-06-15T15:08:07Z</mso:RevIMDeletionDate>
+<mso:RevIMBCS msdt:dt="string">2;#12.2 Strategy documents|8fe2e8d5-4b9e-4ee4-b058-e5a719c7f021</mso:RevIMBCS>
+<mso:e74ff37ddcec441f8c2d54072e914d2a msdt:dt="string"></mso:e74ff37ddcec441f8c2d54072e914d2a>
+</mso:CustomDocumentProperties>
+</xml><![endif]-->
+</head>
+<body>
+<div class="header">
+ <div class="header-inner">
+ <div>
+ <div class="header-brand">
+ <span class="brand-title">AI@VWC</span>
+ <div class="brand-divider"></div>
+ <span class="brand-subtitle">CLK KI-News Dashboard</span>
+ </div>
+ <div class="header-meta">
+ <span class="meta-tag">Wöchentlich</span>
+ <span class="meta-date" id="headerDate"></span>
+ </div>
+ </div>
+ <div class="header-right">
+ <span class="vwc-logo">Volkswagen Group Consulting</span>
+ <div class="archive-container">
+ <span class="archive-label">Version</span>
+ <select class="archive-select" id="archiveSelect" onchange="switchVersion(this.value)">
+ <option value="v5">03. Juli 2026, 15:00 Uhr</option>
+ <option value="v4">15. Juni 2026, 16:00 Uhr</option>
+        <option value="v3">22. Mai 2026, 08:00 Uhr</option>
+ <option value="v2">12. Mai 2026, 17:17 Uhr</option>
+ <option value="v1">07. Mai 2026, 09:51 Uhr</option>
+ </select>
+ </div>
+ </div>
+ </div>
+</div>
+<div class="toolbar">
+ <div class="search-box">
+ <span class="search-icon">🔍</span>
+ <input type="text" id="searchInput" placeholder="News durchsuchen …" oninput="applyFilters()">
+ </div>
+ <div class="filter-chips" id="filterChips"></div>
+</div>
+<div class="dashboard" id="dashboard"></div>
+<div class="footer">
+ <div class="footer-text" id="footerText"></div>
+</div>
+<script>
+var VERSIONS = {
+  "v5": {
+  "headerDate": "📅 03. Juli 2026 · KW 27",
+  "footerText": "Zuletzt aktualisiert: 03. Juli 2026, 15:00 Uhr · Volkswagen Group Consulting",
+  "chips": [
+    {
+      "label": "Alle",
+      "cat": "all"
+    },
+    {
+      "label": "Übergreifend",
+      "cat": "1"
+    },
+    {
+      "label": "Beratungen",
+      "cat": "2"
+    },
+    {
+      "label": "Automotive",
+      "cat": "3"
+    },
+    {
+      "label": "VW Konzern",
+      "cat": "4"
+    },
+    {
+      "label": "Forschung",
+      "cat": "5"
+    }
+  ],
+  "categories": [
+    {
+      "cat": "1",
+      "label": "Kategorie 1",
+      "title": "Übergreifende KI-News",
+      "news": [
+        {
+          "headline": "AI-Spending-Revolte: Enterprise-Kunden bremsen OpenAI und Anthropic aus – Wechsel zu günstigeren Alternativen",
+          "was": "Laut CNBC-Analyse vom 26. Juni 2026 kämpfen OpenAI und Anthropic mit einer neuen Marktrealität: Große Enterprise-Kunden wie Uber (1.500 USD/Monat Basis-Tier) und Startups wie Lindy verlagern Traffic zu DeepSeek und Open-Weight-Alternativen, um explodierende Token-Kosten zu kontrollieren. Uber hatte im April sein gesamtes Jahres-AI-Budget in 4 Monaten aufgebraucht. Analysten sprechen vom Ende der „Tokenmaxxing“-Ära und einem Shift zu Effizienz und ROI-Messung.",
+          "warum": "Bestätigt VWCs Kernthese: KI-Wert muss messbar sein und Prozess-Redesign schlägt Tool-Konsum. Direkt einsetzbar als Argument in Vendor-Strategie- und FinOps-Diskussionen im Konzern – TCO- und Multi-Model-Strategien werden zur Pflicht.",
+          "quelle": "CNBC, 26.06.2026",
+          "url": "https://www.cnbc.com/2026/06/26/openai-anthropic-new-ai-spending-reality-as-users-shift-to-efficiency.html"
+        },
+        {
+          "headline": "US-Regierung hebt Blockade von Anthropics Mythos 5 teilweise auf – Frontier-Modelle bleiben unter politischer Kontrolle",
+          "was": "Am 26. Juni 2026 hat die Trump-Administration die zwei Wochen zuvor per Export-Control-Direktive verhängte Sperre für Anthropics Cybersecurity-Modell Mythos 5 gelockert. Das Modell darf laut Handelsblatt-Bericht wieder an eine kleine, staatlich freigegebene Gruppe von „Cyber Defenders und Infrastrukturbetreibern“ ausgeliefert werden; Fable 5 bleibt weiter gesperrt. Parallel gab OpenAI bekannt, dass GPT-5.6 Sol nur an von der US-Regierung freigegebene Kunden ausgeliefert wird – auf Basis einer Trump-Executive-Order zur AI-Oversight mit bis zu 30 Tagen Regierungsprüfung vor jedem Frontier-Release.",
+          "warum": "Präzedenzloser Eingriff in kommerzielle KI-Verfügbarkeit – Zugang zu Frontier-Modellen wird zur geopolitischen Variable. Zentral für VWCs Sourcing- und Kontinuitätsstrategie: Konzern muss Multi-Vendor-Setups inkl. europäischer und Open-Weight-Fallbacks strukturell absichern.",
+          "quelle": "Handelsblatt / AP, 26.06.2026",
+          "url": "https://www.handelsblatt.com/technik/it-internet/kuenstliche-intelligenz-us-regierung-hebt-blockade-von-anthropics-ki-modellen-auf/100237033.html"
+        },
+        {
+          "headline": "Anthropic launcht Claude Sonnet 5 – Midrange-Modell mit Autonomie- und Security-Upgrades",
+          "was": "Anthropic hat am 30. Juni 2026 Claude Sonnet 5 vorgestellt: +5,1 % auf SWE-Bench Pro und +13,4 % auf Terminal-Bench 2.1 gegenüber Sonnet 4.6, GDPval-AA-Score von 1.618 (vs. 1.395). Das Modell prüft Outputs teils autonom nach und ist deutlich robuster gegen Prompt-Injection-Angriffe. Preise ab September: 3 USD/1M Input- bzw. 15 USD/1M Output-Tokens. Sonnet 5 wird Standard in Free-, Pro-, Max-, Team- und Enterprise-Plänen.",
+          "warum": "Für VWC-Beratungsprojekte relevanter Sweet-Spot: Bessere Coding- und Agentic-Performance zu Midrange-Preisen und mit gehärteten Security-Guardrails – attraktiv für skalierten produktiven Einsatz in Konzernprozessen mit Compliance-Anforderungen.",
+          "quelle": "SiliconANGLE, 30.06.2026",
+          "url": "https://siliconangle.com/2026/06/30/anthropic-launches-claude-sonnet-5-coding-safety-upgrades/"
+        }
+      ]
+    },
+    {
+      "cat": "2",
+      "label": "Kategorie 2",
+      "title": "KI-News von Strategieberatungen",
+      "news": [
+        {
+          "headline": "McKinsey „The Symbiotic Enterprise“: Cognitive und Physical AI erzwingen neues Operating Model",
+          "was": "McKinseys am 18. Juni 2026 veröffentlichter Report „The symbiotic enterprise“ argumentiert, dass die Kombination aus kognitiver KI (Sprach- und Reasoning-Modelle) und physischer KI (Robotik, autonome Systeme) ein grundlegend neues Enterprise-Operating-Model erzwingt. Klassische Hierarchien, Rollen und Prozess-Layer werden durch symbiotische Mensch-Agent-Workflows abgelöst. Der Report liefert ein Framework mit Redesign-Prinzipien und Führungs-Playbook.",
+          "warum": "Hochrelevant für VWCs Positionierung als Transformationspartner: liefert konsulentendes Vokabular („Symbiotic Enterprise“) und ein anschlussfähiges Framework, um Konzernprozesse jenseits von Tool-Rollouts end-to-end zu re-designen.",
+          "quelle": "McKinsey, 18.06.2026",
+          "url": "https://www.mckinsey.com/capabilities/quantumblack/our-insights"
+        },
+        {
+          "headline": "BCG AI at Work 2026: 74 % der Frontline-Mitarbeitenden nutzen KI regelmäßig – doch Zeit wird nicht in Wertschöpfung übersetzt",
+          "was": "BCGs 4. Edition von „AI at Work“ (Juni 2026, n=11.749) zeigt: 74 % der Frontline-Mitarbeitenden sind Regular Users (+23 pp vs. 2025), 42 % sparen einen ganzen Tag pro Woche. Aber: 66 % erhalten keine Guidance, was mit der eingesparten Zeit passieren soll; nur 36 % fühlen sich ausreichend trainiert, nur 33 % erleben klare Leadership-Kommunikation. 61 % glauben, dass Agenten in 3 Jahren die Hälfte ihres Jobs übernehmen können.",
+          "warum": "Direktes Enablement-Argument für VWC: Der Adoption-Hebel ist gelöst – der eigentliche Beratungsbedarf liegt jetzt in Redirection (Zeit → strategische Arbeit), Führung, Skilling und im end-to-end Redesign von Prozessen. Steilvorlage für People-&-Change-Angebote im Konzern.",
+          "quelle": "BCG, Juni 2026",
+          "url": "https://web-assets.bcg.com/eb/92/4b39b729403fb6fcae4ff974b234/ai-at-work-slideshow-jun-2026-1.pdf"
+        },
+        {
+          "headline": "McKinsey: „Capturing Central Europe's AI opportunity“ – deutsche Unternehmen müssen Geschäftsdomänen um KI herum re-designen",
+          "was": "Am 22. Juni 2026 veröffentlichte McKinsey eine dedizierte Analyse zum zentraleuropäischen KI-Potenzial. Kernaussage: KI entwickelt sich zu schnell, um als Nebeninitiative behandelt zu werden. Zentraleuropäische Unternehmen können nur dann aufschließen, wenn sie ganze Geschäftsdomänen – nicht einzelne Prozesse – und die Organisation selbst um KI herum neu strukturieren. Parallel erschien am 23.06. „AI data readiness“ als zentrale Skalierungsvoraussetzung.",
+          "warum": "Wettbewerbsdruck-Argument für Vorstands- und Bereichsdiskussionen im VW Konzern: McKinsey adressiert die deutsche/mitteleuropäische Ausgangslage direkt. Nutzbar als Türöffner für Domain-Reengineering-Mandate über CLK-Vorlagen.",
+          "quelle": "McKinsey, 22./23.06.2026",
+          "url": "https://www.mckinsey.com/capabilities/quantumblack/our-insights"
+        }
+      ]
+    },
+    {
+      "cat": "3",
+      "label": "Kategorie 3",
+      "title": "KI-News aus der Automobilindustrie",
+      "news": [
+        {
+          "headline": "Ford holt 350 „Gray Beard“-Ingenieure zurück – KI-basiertes Qualitätssystem hat Erwartungen nicht erfüllt",
+          "was": "COO Kumar Galhotra bestätigte am 28. Juni 2026, dass Ford 350 erfahrene Ingenieure (teils ehemalige Mitarbeiter, teils von Zulieferern) reaktiviert hat, nachdem automatisierte KI-Qualitätssysteme keine ausreichende Produktqualität lieferten. „Fälschlicherweise dachten wir, KI plus Design-Anforderungen produzieren ein qualitativ hochwertiges Produkt“, so VP Charles Poon. Die Veteranen trainieren jetzt jüngere Mitarbeitende und re-programmieren die KI-Tools. Ergebnis: JD-Power-Bestwert bei Initial Quality und mehrere hundert Mio. USD Einsparungen.",
+          "warum": "Reality-Check für unreflektierten „AI first“-Ansatz in Engineering-Prozessen: Erfahrungswissen bleibt kritischer Werthebel. Direkt anwendbar auf VWs Diskussionen zu KI im Product Development und im Qualitätsmanagement – untermauert VWCs Argumentation für Human-in-the-Loop-Designs.",
+          "quelle": "TechCrunch / Bloomberg, 28.06.2026",
+          "url": "https://techcrunch.com/2026/06/28/ford-rehires-gray-beard-engineers-after-ai-falls-short/"
+        },
+        {
+          "headline": "China MIIT verabschiedet L3/L4-Pflichtstandard – 10-Sekunden-Übernahmefrist ab 2027",
+          "was": "Chinas Ministry of Industry and Information Technology hat am 30. Juni 2026 den Entwurf eines verpflichtenden nationalen Standards für Level-3- und Level-4-Systeme veröffentlicht. Zentraler Punkt: eine feste 10-Sekunden-Übernahmefrist für den Fahrer bei L3, verpflichtend ab 2027, inklusive Zulassungs-, Datenaufzeichnungs- und Melde-Anforderungen. China wird damit der erste Großmarkt mit harten regulatorischen Vorgaben für autonomes Fahren – vor der EU.",
+          "warum": "Regulatorischer Präzedenzfall mit direktem Impact auf VWs CEA-Roadmap und die China-Strategie. Für Benchmarking- und Compliance-Diskussionen in Konzernprojekten sofort relevant – China wird Referenzrahmen, an dem sich globale L3/L4-Freigaben orientieren.",
+          "quelle": "AutoTech News / MIIT, 30.06.2026",
+          "url": "https://autotech.news/category/self-driving/"
+        },
+        {
+          "headline": "Li Auto stellt „weltweit ersten“ Dataflow-AI-Chip Mach M100 vor – 1.280 TOPS für Tesla-Level-Autonomie",
+          "was": "Am 18. Juni 2026 („Livis Day“) präsentierte Li Auto die Mach M100 SoC-Architektur mit 1.280 TOPS und einer nach eigener Aussage weltweit ersten Dataflow-Architektur. Parallel angekündigt: drei große OTA-KI-Updates für 2026 mit dem Ziel, Tesla-Niveau bei autonomer Fahrfähigkeit zu erreichen. Chery schwenkt zeitgleich um und setzt seine Highend-Autonomie auf die Huawei-Yinwang-Plattform um.",
+          "warum": "Chinesische OEMs übernehmen bei In-Car-Compute-Stacks die Innovationsführerschaft und schaffen eine parallele Referenzarchitektur zu Nvidia. Klarer Benchmark für CARIAD/CEA-Strategie und für Vorstandsdiskussionen zur Chip- und Compute-Souveränität im Konzern.",
+          "quelle": "AutoTech News, 18.06.2026",
+          "url": "https://autotech.news/category/self-driving/"
+        }
+      ]
+    },
+    {
+      "cat": "4",
+      "label": "Kategorie 4",
+      "title": "KI-News aus dem Volkswagen Konzern",
+      "news": [
+        {
+          "headline": "CARIAD eröffnet Automotive Software Campus in Berlin – 1.000 KI-Experten für das „KI-definierte Fahrzeug“",
+          "was": "Am 23. Juni 2026 haben Konzern-CEO Oliver Blume und CARIAD-CEO Peter Bosch gemeinsam mit Bundestagspräsidentin Julia Klöckner, VDA-Präsidentin Hildegard Müller und Bitkom-Präsident Ralf Wintergerst den Automotive Software Campus in Berlin eröffnet. Auf elf Etagen bündeln rund 1.000 Spezialisten aus bislang sieben Standorten die konzernweite KI-Expertise – von Umfeldwahrnehmung für automatisiertes Fahren über KI-basierte Sprachassistenten bis zu skalierbaren KI-Plattformen. Blume: „Das KI-definierte Fahrzeug steht für die nächste Generation der Mobilität.“",
+          "warum": "Klares strategisches Signal: Der Konzern institutionalisiert KI-Kompetenz als eigenen Standort und erhebt „AI-defined vehicle“ zur Kern-Erzählung der Transformation. Direkter Kontext für alle VWC-Mandate mit KI-Enablement-, Software- und Talentbezug.",
+          "quelle": "Volkswagen Group / CARIAD, 23.06.2026",
+          "url": "https://cariad.technology/de/en/news/stories/cariad-opens-automotive-software-campus.html"
+        },
+        {
+          "headline": "VW/CARIAD schwenkt bei Level 3 auf Foundation Models und Vision-Language-Action-Ansätze um",
+          "was": "Am 3. Juli 2026 wurde bekannt, dass CARIAD nach dem Aus der Bosch-Kooperation den KI-Ansatz für hochautomatisiertes Fahren fundamental neu aufsetzt. Statt der bisherigen Kombination aus Expertensystemen und modularer KI-Umfeldwahrnehmung testet der Konzern laut CARIAD-Entwicklungschef Manuel Birke jetzt Foundation Models und Vision-Language-Action-Modelle (VLA) – dieselbe Modellklasse, die aktuell auch chinesische OEMs und Waymo für End-to-End-Autonomie einsetzen. Ein Serientermin wurde bewusst offen gelassen.",
+          "warum": "Architektur-Wechsel mit weitreichenden Implikationen: VW verlässt den klassischen ADAS-Stack und wettet auf generative KI-Modelle als Kernbaustein. Direkt relevant für CARIAD-, SDV- und Sourcing-Diskussionen sowie für Beratungsmandate zu Compute-, Daten- und Trainingsinfrastruktur.",
+          "quelle": "IT-BOLTWISE, 03.07.2026",
+          "url": "https://www.it-boltwise.de/vw-beendet-bosch-kooperation-und-rueckt-bei-level-3-auf-ki-modelle-um.html"
+        },
+        {
+          "headline": "Bosch & CARIAD bringen KI-basiertes Level-2-System in Serie – Automated Driving Alliance erreicht Serienreife",
+          "was": "Bosch und CARIAD haben am 1. Juli 2026 verkündet, dass ihr gemeinsam entwickelter KI-basierter Assistenz-Stack für Level 2 den Serien-Meilenstein erreicht hat und in die Software-defined-Vehicle-Architektur des Konzerns überführt wird. Damit endet die 2022 gestartete Automated Driving Alliance an dieser Zielmarke – die zuvor geplante Level-3-Erweiterung wird nicht mehr gemeinsam verfolgt (siehe VW/CARIAD-Umschwenken auf Foundation Models). Die KI-Komponenten decken Wahrnehmung, Interpretation, Entscheidung und Handeln ab.",
+          "warum": "Erste produktive konzerneigene KI-Serie im hochsicherheitsrelevanten Fahrzeugumfeld – wichtiger Referenzpunkt für Governance, Validierung und Skalierung produktiver KI in kritischen Prozessen. Nutzbar für Best-Practice-Argumentationen in konzernweiten Mandaten.",
+          "quelle": "CARIAD / Bosch, 01.07.2026",
+          "url": "https://cariad.technology/de/en/news.html"
+        }
+      ]
+    },
+    {
+      "cat": "5",
+      "label": "Kategorie 5",
+      "title": "KI-News aus der Forschung",
+      "news": [
+        {
+          "headline": "Anthropic „The Briefing: AI for Science“ – Aufbau eines AI-for-Science-Ökosystems mit Nobelpreisträger John Jumper",
+          "was": "Am 30. Juni 2026 veranstaltete Anthropic sein bislang größtes wissenschaftliches Event: „The Briefing: AI for Science“. Vorgestellt wurden Deployments von Claude in Life-Sciences bei Pharma-Konzernen und Forschungspartnern (Allen Institute, HHMI), inklusive erstmaligem öffentlichen Auftritt von AlphaFold-Miterfinder John Jumper (Nobelpreis Chemie 2024), der am 19.06. von Google DeepMind zu Anthropic gewechselt war. Anthropic baut parallel eigene Wet Labs und Biology Agents.",
+          "warum": "Deutliches Signal, dass Frontier-Labs das Feld „AI-for-Science“ als nächsten Wettbewerbsraum besetzen. Direkt relevant für VW-Forschungsprogramme (z. B. neue KI-Professur TU Braunschweig, CARIAD-Labs) und für die Positionierung von Beratungsmandaten an der Schnittstelle F&E/KI.",
+          "quelle": "Memeburn / Anthropic, 19.–30.06.2026",
+          "url": "https://memeburn.com/nobel-prize-winner-john-jumper-just-left-google-for-anthropic-in-2026s-biggest-ai-hire/"
+        },
+        {
+          "headline": "Stanford HAI aktualisiert AI Index Report 2026 (v3) auf arXiv – neue Kapitel zu „AI in Science“ und „AI Sovereignty“",
+          "was": "Am 29. Juni 2026 hat das Stanford Institute for Human-Centered AI (HAI) die dritte Revision seines AI Index Report 2026 auf arXiv publiziert (arXiv:2606.15708v3, 378 Seiten). Der Report umfasst erstmals eigenständige Kapitel zu „AI in Science“ (in Kooperation mit Schmidt Sciences) und „AI in Medicine“, einen analytischen Rahmen zu „AI Sovereignty“ sowie neue Schätzungen zum wirtschaftlichen Wert generativer KI. Kern-Ergebnisse: US-China-Modell-Vorsprung faktisch geschlossen (Anthropic Top-Modell nur +2,7 %), 88 % organisatorische Adoption, SWE-bench Verified von 60 auf ~100 % in einem Jahr, Foundation-Model-Transparency-Score von 58 auf 40 gefallen.",
+          "warum": "Der AI Index ist der weltweit meistzitierte unabhängige akademische Benchmark für KI-Reife und liefert VWC ein verlässliches Referenzwerk für Vorstands-, Strategie- und Governance-Diskussionen – insbesondere neue Argumente zu AI Sovereignty (Souveränitätsstrategie) und Transparenzkrise (RAI-Governance).",
+          "quelle": "Stanford HAI / arXiv, 29.06.2026",
+          "url": "https://arxiv.org/abs/2606.15708"
+        },
+        {
+          "headline": "AI Drug Discovery erreicht Phase IIa – BIO 2026 markiert Wendepunkt für generatives Molekül-Design",
+          "was": "Auf der BIO International Convention (San Diego, Ende Juni 2026) wurde bestätigt: Ein erstes vollständig KI-designtes Molekül von Generative-Protein-Plattformen (Xaira Therapeutics, Generate Biomedicines, Isomorphic Labs) hat Phase IIa erfolgreich passiert. Basis ist RFdiffusion (Baker Lab, Nobelpreis 2024) – Kandidatensuche reduziert sich von zehntausenden Molekülen auf wenige gezielt generierte Designs.",
+          "warum": "Klinischer Proof-Point für generative KI jenseits von Text/Code – Blueprint für generatives Design in physischen Produkten (Materialien, Batteriechemie, Bauteile). Direkt anschlussfähig für VW-Forschung, Materialwissenschaft und Innovationsberatung im Konzern.",
+          "quelle": "TechTimes / BIO 2026, 26.06.2026",
+          "url": "https://www.techtimes.com/articles/319136/20260626/ai-drug-discovery-reaches-clinical-proof-bio-2026-china-beat-biosecure-act-science.htm"
+        }
+      ]
+    }
+  ]
+},
+
+  "v4": {
+  "headerDate": "📅 15. Juni 2026 · KW 25",
+  "footerText": "Zuletzt aktualisiert: 15. Juni 2026, 16:00 Uhr · Volkswagen Group Consulting",
+  "chips": [
+    {
+      "label": "Alle",
+      "cat": "all"
+    },
+    {
+      "label": "Übergreifend",
+      "cat": "1"
+    },
+    {
+      "label": "Beratungen",
+      "cat": "2"
+    },
+    {
+      "label": "Automotive",
+      "cat": "3"
+    },
+    {
+      "label": "VW Konzern",
+      "cat": "4"
+    },
+    {
+      "label": "Forschung",
+      "cat": "5"
+    }
+  ],
+  "categories": [
+    {
+      "cat": "1",
+      "label": "Kategorie 1",
+      "title": "Übergreifende KI-News",
+      "news": [
+        {
+          "headline": "OpenAI und Anthropic reichen vertrauliche S-1-Anträge ein – Billionen-Dollar-IPO-Welle rollt an",
+          "was": "Anthropic hat am 1. Juni 2026 einen vertraulichen S-1-Antrag bei der SEC eingereicht – nur vier Tage nach Abschluss einer $65-Mrd.-Series-H-Runde bei einer Bewertung von $965 Mrd. Eine Woche später folgte OpenAI mit einem eigenen vertraulichen S-1-Filing bei einer Bewertung von $852 Mrd. Goldman Sachs und Morgan Stanley begleiten beide Listings, die für Q4 2026 anvisiert werden. Zusammen mit dem SpaceX-IPO ($1,75 Bio.) könnten drei der wertvollsten privaten Unternehmen der Welt innerhalb weniger Monate an die Börse gehen.",
+          "warum": "Die konzentrierteste IPO-Welle seit dem Dotcom-Boom hat direkte Implikationen für VWCs KI-Plattform- und Vendor-Strategie: Öffentliche Finanzdaten beider Labs werden erstmals Transparenz über Burn Rates, Margen und Compute-Kosten schaffen – zentral für Sourcing-Entscheidungen im Konzern.",
+          "quelle": "CNBC / TechCrunch, 01.–08.06.2026",
+          "url": "https://techcrunch.com/2026/06/08/following-anthropic-openai-files-confidentially-for-ipo/"
+        },
+        {
+          "headline": "Anthropic launcht Claude Fable 5 – leistungsfähigstes KI-Modell aller Zeiten, drei Tage später von US-Regierung gesperrt",
+          "was": "Am 9. Juni veröffentlichte Anthropic Claude Fable 5, das erste öffentlich verfügbare Mythos-Klasse-Modell: 95 % auf SWE-bench Verified, 91/100 auf dem Every-Senior-Engineer-Benchmark und doppelte Leistung gegenüber Opus 4.8 auf FrontierCode Diamond. Nur drei Tage später, am 12. Juni, ordnete das US-Handelsministerium per Export-Control-Direktive die sofortige Sperrung von Fable 5 und Mythos 5 für alle ausländischen Staatsangehörigen an – weltweit, inklusive Anthropics eigener Mitarbeiter. Anthropic musste das Modell für sämtliche Kunden abschalten.",
+          "warum": "Erstmals hat die US-Regierung ein kommerziell verfügbares KI-Modell retroaktiv per Exportkontrolle gesperrt – ein Präzedenzfall mit massiven Implikationen für europäische Unternehmen und VWCs KI-Strategie: Die Verfügbarkeit von Frontier-Modellen wird zum geopolitischen Risikofaktor.",
+          "quelle": "CNBC / Anthropic, 09.–13.06.2026",
+          "url": "https://www.anthropic.com/news/fable-mythos-access"
+        },
+        {
+          "headline": "Claude-Ausfälle häufen sich: Anthropic kämpft mit Stabilität trotz $965-Mrd.-Bewertung",
+          "was": "Anthropic verzeichnete im Mai und Juni 2026 eine Serie von Ausfällen: Am 8. Mai fielen mehrere Claude-Modelle aus, am 22. Mai war Claude Code global nicht erreichbar, am 30. Mai folgte ein weiterer weltweiter Ausfall, und am 2. Juni waren Claude API, Console und Code erneut betroffen. Die 30-Tage-Uptime von claude.ai lag bei nur 84,3 %, die von Claude Code bei 83,2 %. Nutzer in Europa meldeten wiederholt Verbindungsprobleme und Error-529-Meldungen (Overloaded).",
+          "warum": "Für ein Unternehmen mit $965 Mrd. Bewertung und geplantem IPO sind wiederkehrende Ausfälle ein ernstes Signal: Die Infrastruktur hält mit dem Wachstum nicht Schritt. Relevant für VWCs Bewertung der Zuverlässigkeit von KI-Plattformen in produktionskritischen Anwendungen.",
+          "quelle": "StatusGator / DownDetector, Mai–Juni 2026",
+          "url": "https://claudestatus.com/"
+        }
+      ]
+    },
+    {
+      "cat": "2",
+      "label": "Kategorie 2",
+      "title": "KI-News von Strategieberatungen",
+      "news": [
+        {
+          "headline": "McKinsey verabschiedet sich von PowerPoint: KI-gestützte Projekt-Hubs ersetzen Slide Decks",
+          "was": "McKinseys Global Leader for Technology and AI, Kate Smaje, bestätigt, dass die PowerPoint-Nutzung bei McKinsey innerhalb weniger Monate massiv gesunken ist. Berater nutzen zunehmend KI-Tools zum Vibe-Coding eigener Projekt-Websites. Ein Engagement Manager hat für ein 70-Personen-Projekt einen KI-gestützten Client Visualization Hub entwickelt, der als zentrale, durchsuchbare Plattform das klassische Slide-Deck ersetzt – mit Echtzeit-Updates, Versionskontrolle und einheitlichem Informationsstand für alle Stakeholder.",
+          "warum": "Signal für den fundamentalen Wandel der Beratungsarbeit: Wenn McKinsey selbst PowerPoint durch KI-generierte Plattformen ersetzt, verändert sich das Delivery-Modell der gesamten Branche. Direkt relevant für VWCs eigene Arbeitsweise und die Positionierung gegenüber Klienten.",
+          "quelle": "Business Insider / McKinsey, 10.06.2026",
+          "url": "https://www.firstpost.com/tech/powerpoint-no-longer-the-default-mckinsey-employees-use-ai-to-rethink-project-management-14021018.html"
+        },
+        {
+          "headline": "BCG: AI-First Enterprise Operations – KI-Agenten können Kosten um 60 % oder mehr senken",
+          "was": "BCGs am 15. Juni 2026 veröffentlichte Studie „AI-First Enterprise Operations“ zeigt: KI-Agenten können operative Kosten um 60 % oder mehr reduzieren – aber nur, wenn Prozesse end-to-end redesignt werden. Parallel warnt BCG in einer weiteren Analyse, dass die Lücke zwischen dem von CMOs behaupteten KI-Transformationsfortschritt und den tatsächlich implementierten Veränderungen „die Story von 2026“ sei.",
+          "warum": "Bestätigt VWCs Kernthese: Der KI-Wert entsteht nicht durch Tool-Einführung, sondern durch Prozess-Redesign. Die 60-%-Zahl liefert einen konkreten Argumentationshebel für Beratungsmandate zu operativer Transformation.",
+          "quelle": "BCG, 15.06.2026",
+          "url": "https://www.bcg.com/publications"
+        },
+        {
+          "headline": "Enterprise AI Playbook 2026: 72 % der CEOs sind jetzt primäre KI-Entscheider",
+          "was": "Eine Synthese aus über 20 Reports von BCG, McKinsey, Deloitte, Capgemini, Bain, Accenture und PwC zeigt: 72 % der CEOs sehen sich als primäre KI-Entscheider (Verdopplung in einem Jahr, BCG AI Radar 2026). Nur 25 % der Organisationen haben mehr als 40 % ihrer KI-Experimente in Produktion überführt (Deloitte). Über 50 % der US-Arbeitsstunden könnten durch KI-Agenten umgestaltet werden (Accenture/Wharton). 60 % der Unternehmen planen höhere KI-Ausgaben in 2026.",
+          "warum": "Das Playbook verdichtet die wichtigsten Consulting-Erkenntnisse in einem Dokument – direkt einsetzbar für VWCs Argumentation in CLK-Vorlagen und Strategiepapieren: KI ist Chefsache geworden, aber die Skalierung bleibt die zentrale Herausforderung.",
+          "quelle": "AIatWork / BCG / McKinsey / Deloitte, 2026",
+          "url": "https://enterprise.aiatwork.ai/resource/enterprise-ai-playbook-2026"
+        }
+      ]
+    },
+    {
+      "cat": "3",
+      "label": "Kategorie 3",
+      "title": "KI-News aus der Automobilindustrie",
+      "news": [
+        {
+          "headline": "Waymo sichert $16 Mrd. und expandiert in 20+ Städte – Robotaxi wird kommerzieller Standard",
+          "was": "Waymo hat Anfang Februar 2026 eine $16-Mrd.-Finanzierungsrunde bei einer Bewertung von $126 Mrd. abgeschlossen – angeführt von Dragoneer, DST Global und Sequoia. Das Unternehmen liefert inzwischen über 400.000 Fahrten pro Woche in sechs US-Metropolen und hat 2025 sein jährliches Fahrtvolumen auf 15 Mio. Rides verdreifacht. Für 2026 plant Waymo die Expansion in über 20 weitere Städte, darunter erstmals London und Tokio. Im Juni wurde zudem das Ojai vorgestellt – das erste speziell für Robotaxi-Betrieb konzipierte Fahrzeug.",
+          "warum": "Waymo definiert den kommerziellen Standard für autonome Mobilität: $16 Mrd. Funding, 20+ Städte und ein dediziertes Robotaxi-Fahrzeug zeigen, dass Level-4-Autonomie skaliert. Direkter Benchmark für VWs eigene Autonomie-Strategie und potenzielle Partnerschaften.",
+          "quelle": "TechCrunch / CNBC, Februar–Juni 2026",
+          "url": "https://techcrunch.com/2026/02/02/waymo-raises-16-billion-round-to-scale-robotaxi-fleet-london-tokyo/"
+        },
+        {
+          "headline": "Humanoid Robots erobern Automotive-Produktion: Figure 03 bei BMW, Apollo bei Mercedes, Optimus bei Tesla",
+          "was": "2026 markiert den Durchbruch humanoider Roboter in der Automobilproduktion: BMWs Figure 03 verschraubt Teile, Mercedes setzt Apollo für Karosseriepanels ein, Tesla integriert Optimus in die Batteriemodul-Montage, und Hyundai nutzt vierbeinige Roboter für autonome Werksinspektionen. Über 50.000 humanoide Roboter sind bis 2027 für Automotive-Werke bestellt. Der Markt für Automotive-Robotik wird bis 2030 auf $38 Mrd. prognostiziert.",
+          "warum": "Physical AI wird zum eigenständigen Transformationsfeld in der Automobilindustrie – die Konvergenz von humanoider Robotik und KI-Steuerung verändert Produktionsprozesse fundamental. Relevanter Benchmark für VW-Produktionsprojekte und Beratungsmandate.",
+          "quelle": "iFactory / PYMNTS, Mai 2026",
+          "url": "https://ifactoryapp.com/industries/automotive-manufacturing/humanoid-quadruped-robot-automotive-manufacturing-2026"
+        },
+        {
+          "headline": "Mercedes-Benz & Liquid AI: On-Device-KI für MBUX startet in H2 2026 – Fahrzeug-Intelligenz ohne Cloud",
+          "was": "Mercedes-Benz hat am 23. April 2026 eine mehrjährige Partnerschaft mit Liquid AI angekündigt: Liquid Foundation Models (LFM) werden direkt in Fahrzeuge mit MBUX der 3. und 4. Generation in Nordamerika integriert. Die On-Device-KI ermöglicht schnelle Reaktionszeiten, höhere Datensouveränität und zuverlässige Sprachinteraktion auch ohne Internetverbindung. Der Serienstart ist für H2 2026 geplant. Parallel integriert die neue Mercedes CLA ein Multi-Agent-KI-System mit ChatGPT, Microsoft Bing und Google Gemini.",
+          "warum": "Mercedes setzt konsequent auf lokale KI im Fahrzeug – ein Paradigmenwechsel von Cloud-Abhängigkeit zu On-Device-Intelligenz. Direkter Wettbewerbs-Benchmark für VWs eigene In-Car-AI-Strategie und die CEA-Roadmap in China.",
+          "quelle": "Mercedes-Benz Group / Electric Cars Report, 23.04.2026",
+          "url": "https://group.mercedes-benz.com/technology/innovation/collaboration/liquid-ai.html"
+        }
+      ]
+    },
+    {
+      "cat": "4",
+      "label": "Kategorie 4",
+      "title": "KI-News aus dem Volkswagen Konzern",
+      "news": [
+        {
+          "headline": "VW Group und TU Braunschweig gründen KI-Professur für „AI Methods in Product Development“",
+          "was": "Am 28. Mai 2026 haben die Volkswagen Group und die Technische Universität Braunschweig eine neue Professur für „AI Methods in Product Development“ eingerichtet. Ziel ist es, die Spitzenforschung im Mobilitätssektor auszubauen und den Transfer wissenschaftlicher Erkenntnisse in die industrielle Praxis zu beschleunigen. Die Professur verbindet KI-Methodik mit konkreten Produktentwicklungsprozessen im Automobilbereich.",
+          "warum": "Strategisches Signal für den Aufbau eigener KI-Kompetenzen im Konzern: Die Verknüpfung von akademischer KI-Forschung mit industrieller Produktentwicklung stärkt VWs Position als Technologieführer und schafft Nachwuchspipeline für KI-Talente.",
+          "quelle": "Volkswagen Group, 28.05.2026",
+          "url": "https://www.volkswagen-group.com/en/press-releases"
+        },
+        {
+          "headline": "Bosch & CARIAD: KI-basierter Automated-Driving-Stack ab Mitte 2026 serienreif",
+          "was": "Der gemeinsam von Bosch und CARIAD entwickelte End-to-End-KI-Stack für automatisiertes Fahren (Level 2/3) steht ab Mitte 2026 für Serienprojekte bereit – er wird in die neue Software-defined-Vehicle-Architektur des VW Konzerns integriert. Der Stack kombiniert Kamerasensorik mit neuronalen Netzwerken für Echtzeit-Umfeldwahrnehmung und Pfadplanung und markiert einen zentralen Meilenstein für KI-Serieneinsatz im Konzern.",
+          "warum": "Zentraler Meilenstein für KI-Serieneinsatz im Konzern und Beweis, dass die deutsche Automobilindustrie KI-basiertes automatisiertes Fahren eigenständig beherrscht – relevant für Use-Case-Priorisierung und Technologie-Scouting in Beratungsprojekten.",
+          "quelle": "CARIAD / Bosch, 2026",
+          "url": "https://cariad.technology/de/en/news/stories/automated-driving-alliance-ai-next-level.html"
+        },
+        {
+          "headline": "VW China: Agentic AI for All – KI-Agenten ab H2 2026 serienmäßig in CEA-Modellen",
+          "was": "Ab der zweiten Jahreshälfte 2026 erhalten alle CEA-basierten China-Modelle von Volkswagen einen Onboard-KI-Agenten, der auf einem lokal trainierten Large Language Model basiert. Die China Electronic Architecture (CEA), gemeinsam mit Xpeng entwickelt, bildet die Basis für die Agentic-AI-for-All-Roadmap. CTO Thomas Ulbrich beschrieb den Assistenten als „Begleiter mit Persönlichkeit“. Ab 2027 soll CEA 2.0 intelligentes Fahren und Cockpit in einem einheitlichen System vereinen.",
+          "warum": "Konkretes Signal für produktive Agentic-KI im Fahrzeug mit lokalem Souveränitätsansatz – direkt relevant für Strategie-, Benchmark- und Enablement-Diskussionen rund um In-Car AI und die China-Strategie des Konzerns.",
+          "quelle": "CNBC / Volkswagen Group, 21.04.2026",
+          "url": "https://www.volkswagen-group.com/en/press-releases/auto-china-2026-volkswagen-group-unveils-record-product-offensive-and-agentic-ai-roadmap-for-china-20333"
+        }
+      ]
+    },
+    {
+      "cat": "5",
+      "label": "Kategorie 5",
+      "title": "KI-News aus der Forschung",
+      "news": [
+        {
+          "headline": "NeurIPS 2026 sperrt 18 % aller Einreichungen wegen KI-generierter Texte – Paradigmenwechsel für wissenschaftliches Publizieren",
+          "was": "Die Position Paper Track der NeurIPS 2026 hat am 2. Juni bekanntgegeben, dass 178 Einreichungen (18,4 % aller Submissions) wegen übermäßiger KI-Nutzung beim Verfassen desk-rejected wurden. Weitere 123 Papers (12,7 %) müssen Nachweise substanzieller menschlicher Beteiligung erbringen. Die Konferenz hatte erstmals eine strikte Policy eingeführt, die KI-Nutzung auf Copy-Editing beschränkt, und nutzt das Erkennungstool Pangram zur systematischen Prüfung.",
+          "warum": "Paradigmenwechsel für KI in der Wissenschaft: Wenn fast jede fünfte Einreichung an einer Top-Konferenz KI-generiert ist, stellt das die Integrität des Peer-Review-Systems infrage. Relevant für VWCs Einordnung von KI-Governance und Responsible AI.",
+          "quelle": "NeurIPS Blog, 02.06.2026",
+          "url": "https://blog.neurips.cc/2026/06/02/ai-generated-papers-in-the-neurips-2026-position-paper-track/"
+        },
+        {
+          "headline": "MiniMax M3: Erstes Open-Weight-Modell mit Frontier-Coding, 1M-Token-Kontext und Computer-Use",
+          "was": "MiniMax hat mit M3 das erste Open-Weight-Modell veröffentlicht, das Frontier-Coding-Fähigkeiten, ein natives 1-Million-Token-Kontextfenster und multimodale Computer-Use-Fähigkeiten vereint. Auf SWE-Bench Pro erreicht M3 59,0 % und übertrifft damit GPT-5.5 und Gemini 3.1 Pro. Das Modell basiert auf der proprietären MiniMax Sparse Attention (MSA)-Architektur und kann direkt mit Betriebssystem-Interfaces interagieren.",
+          "warum": "Verschiebt die Build-vs-Buy-Kalkulation erneut: Ein Open-Weight-Modell, das proprietäre Frontier-Modelle in Coding-Benchmarks übertrifft und gleichzeitig Computer-Use beherrscht, eröffnet neue Möglichkeiten für Self-Hosting und Enterprise-Automatisierung.",
+          "quelle": "DevFlokers / MiniMax, Juni 2026",
+          "url": "https://www.devflokers.com/blog/open-source-ai-roundup-june-2026"
+        },
+        {
+          "headline": "NVIDIA Cosmos 3: Open Foundation Model für Physical AI mit Mixture-of-Transformers-Architektur",
+          "was": "NVIDIA hat Cosmos 3 als Open Foundation Model für Physical AI veröffentlicht. Das Modell nutzt eine neuartige Mixture-of-Transformers (MoT)-Architektur, die einen dedizierten Reasoning-Transformer mit einem Expert-Generation-Transformer kombiniert. Cosmos 3 ist für Robotik, autonomes Fahren und industrielle Simulation konzipiert und baut auf NVIDIAs CES-2026-Vision von „Physical AI“ auf, bei der CEO Jensen Huang den „ChatGPT-Moment für Physical AI“ ausrief.",
+          "warum": "NVIDIA positioniert sich als zentrale Plattform für Physical AI – direkt relevant für VWs Produktions-KI, CARIAD-Projekte und die Bewertung von Robotik- und Simulationsplattformen in Beratungsmandaten.",
+          "quelle": "DevFlokers / NVIDIA, Juni 2026",
+          "url": "https://www.devflokers.com/blog/open-source-ai-roundup-june-2026"
+        }
+      ]
+    }
+  ]
+},
+  "v3": {
+  "headerDate": "📅 22. Mai 2026 · KW 21",
+  "footerText": "Zuletzt aktualisiert: 22. Mai 2026, 08:00 Uhr · Volkswagen Group Consulting",
+  "chips": [
+    {
+      "label": "Alle",
+      "cat": "all"
+    },
+    {
+      "label": "Übergreifend",
+      "cat": "1"
+    },
+    {
+      "label": "Beratungen",
+      "cat": "2"
+    },
+    {
+      "label": "Automotive",
+      "cat": "3"
+    },
+    {
+      "label": "VW Konzern",
+      "cat": "4"
+    },
+    {
+      "label": "Forschung",
+      "cat": "5"
+    }
+  ],
+  "categories": [
+    {
+      "cat": "1",
+      "label": "Kategorie 1",
+      "title": "Übergreifende KI-News",
+      "news": [
+        {
+          "headline": "Andrej Karpathy wechselt zu Anthropic – baut Pre-Training-Team für Claude",
+          "was": "OpenAI-Mitgründer Andrej Karpathy hat am 19. Mai seinen Wechsel zu Anthropic bekanntgegeben. Er wird unter Pre-Training-Leiter Nick Joseph ein neues Team aufbauen, das Claude nutzt, um die Pre-Training-Forschung selbst zu beschleunigen. Karpathy war zuvor Director of AI bei Tesla und hatte zuletzt das KI-Bildungs-Startup Eureka Labs gegründet.",
+          "warum": "Einer der profiliertesten KI-Forscher weltweit wechselt zum direkten OpenAI-Rivalen – ein starkes Signal im Talent War der Frontier-Labs und relevant für VWCs Einordnung der KI-Anbieterlandschaft.",
+          "quelle": "TechCrunch / CNBC, 19.05.2026",
+          "url": "https://techcrunch.com/2026/05/19/openai-co-founder-andrej-karpathy-joins-anthropics-pre-training-team/"
+        },
+        {
+          "headline": "n8n steigt dank SAP zur wertvollsten deutschen KI-Firma auf – Bewertung bei 5,2 Mrd. USD",
+          "was": "SAP investiert rund 60 Mio. Euro in das Berliner Automatisierungs-Startup n8n und bewertet es mit 5,2 Mrd. USD – mehr als eine Verdopplung seit Oktober 2025. Die n8n-Technologie wird nativ in SAPs KI-Entwicklungsumgebung Joule Studio integriert, wo Kunden per Low-Code eigene KI-Agenten für Geschäftsprozesse orchestrieren können. Parallel investiert SAP auch einen mittleren zweistelligen Millionenbetrag in Parloa (KI-Kundenservice). n8n verdrängt damit Black Forest Labs als wertvollstes KI-Startup Deutschlands.",
+          "warum": "Signal für die wachsende Bedeutung von KI-Orchestrierung und digitaler Souveränität in Europa – n8n ermöglicht Self-Hosting unabhängig von US-Hyperscalern und verbindet deterministische Geschäftslogik mit probabilistischen KI-Agenten. Relevant für VWCs Bewertung von Automatisierungsplattformen und SAPs KI-Ökosystem in Beratungsmandaten.",
+          "quelle": "Handelsblatt, 12.05.2026",
+          "url": "https://www.handelsblatt.com/technik/ki/ki-n8n-steigt-dank-sap-zur-wertvollsten-deutschen-ki-firma-auf/100223115.html"
+        },
+        {
+          "headline": "Musk verliert Klage gegen Altman und OpenAI – Jury urteilt einstimmig",
+          "was": "Eine Jury in Oakland hat Elon Musks $150-Mrd.-Klage gegen OpenAI, Sam Altman und Microsoft einstimmig abgewiesen. Die Geschworenen befanden, dass Musk die Verjährungsfrist überschritten hatte. Das Urteil fiel nach weniger als zwei Stunden Beratung. Musk kündigte Berufung an.",
+          "warum": "Das Urteil beseitigt ein wesentliches Risiko für OpenAIs geplanten Börsengang ($852 Mrd. Bewertung) und stabilisiert die Partnerschaft mit Microsoft – relevant für VWCs Bewertung der KI-Plattformlandschaft.",
+          "quelle": "CNBC / Ars Technica, 18.05.2026",
+          "url": "https://www.cnbc.com/2026/05/18/musk-altman-openai-trial-verdict.html"
+        }
+      ]
+    },
+    {
+      "cat": "2",
+      "label": "Kategorie 2",
+      "title": "KI-News von Strategieberatungen",
+      "news": [
+        {
+          "headline": "McKinsey: The AI Transformation Manifesto – 12 Themen trennen KI-Leader von Followern",
+          "was": "McKinseys am 7. April 2026 veröffentlichtes AI Transformation Manifesto destilliert 12 zentrale Themen aus Hunderten von Tech- und KI-Transformationen. Kernbotschaft: Nicht die Technologie schafft den Vorteil – Unternehmen gewinnen durch wiederholbare Fähigkeiten in Roadmapping, Talent, Operating Model, Daten und Skalierung. Diagnostische Fragen pro Thema helfen Führungskräften, den eigenen Reifegrad zu bewerten.",
+          "warum": "Direkt einsetzbar als Assessment-Framework für VWCs Beratungsmandate – die 12 Themen liefern eine strukturierte Checkliste, um Transformationsprojekte im Konzern zu benchmarken und Handlungsfelder zu priorisieren.",
+          "quelle": "McKinsey, 07.04.2026",
+          "url": "https://www.mckinsey.com/capabilities/tech-and-ai/our-insights/the-ai-transformation-manifesto"
+        },
+        {
+          "headline": "McKinsey: KI-Agenten disruptieren ERP fundamental – fünf Wege zur Transformation",
+          "was": "McKinseys Report „The End of ERP as We Know It?“ (11. Mai 2026) identifiziert fünf Wege, wie KI-Agenten ERP-Systeme fundamental verändern: von „Value Mission Control“ über agentenbasierte Operating Models bis hin zu „Headless ERP“, bei dem autonome Agenten Transaktionen steuern statt Screen-basierter Eingaben. Early Adopters berichten EBIT-Verbesserungen von 5 % oder mehr; KI-Agenten können ERP-Implementierungsaufwand und -dauer um mindestens 50 % reduzieren.",
+          "warum": "Hochrelevant für Prozess-Redesign im Konzern: McKinsey zeigt, dass ERP-Transformationen durch KI fundamental günstiger und schneller werden – ein direkter Beratungshebel für VWC in SAP- und IT-Strategieprojekten.",
+          "quelle": "McKinsey Digital, 11.05.2026",
+          "url": "https://www.mckinsey.com/capabilities/mckinsey-technology/our-insights/the-end-of-erp-as-we-know-it-five-ways-ai-is-disrupting-erp"
+        },
+        {
+          "headline": "Anthropic: Finanzierungsrunde von 30 Mrd. USD bei 900 Mrd. Bewertung – IPO im Oktober geplant",
+          "was": "Anthropic befindet sich laut Bloomberg in Gesprächen über eine Finanzierungsrunde von mindestens 30 Mrd. USD bei einer Bewertung von über 900 Mrd. USD – ein Anstieg von 380 Mrd. USD im Februar 2026. Das Kapital soll primär Compute-Kapazitäten für das neue Cybersecurity-Modell Mythos sichern. Ein Börsengang wird für Oktober 2026 anvisiert, begleitet von Goldman Sachs, JPMorgan und Morgan Stanley.",
+          "warum": "Zeigt die rasante Dynamik im Frontier-Lab-Wettbewerb: Anthropic überholt OpenAI in der Bewertung, und der Compute-Bedarf treibt beispiellose Kapitalrunden – relevanter Kontext für VWCs KI-Plattform- und Vendor-Strategie.",
+          "quelle": "Bloomberg, 12.05.2026",
+          "url": "https://www.bloomberg.com/news/articles/2026-05-12/anthropic-in-talks-to-raise-30-billion-at-900-billion-valuation"
+        }
+      ]
+    },
+    {
+      "cat": "3",
+      "label": "Kategorie 3",
+      "title": "KI-News aus der Automobilindustrie",
+      "news": [
+        {
+          "headline": "Stellantis FaSTLAne 2030: 60-Mrd.-Euro-Strategieplan mit Wayve-KI-Partnerschaft für autonomes Fahren",
+          "was": "Stellantis hat am 21. Mai 2026 den Fünfjahresplan FaSTLAne 2030 mit einem Investitionsvolumen von 60 Mrd. Euro vorgestellt. Der Plan umfasst über 60 Neueinführungen und 50 Modell-Refreshes bis 2030, darunter 29 BEVs. Zeitgleich wurde eine strategische Partnerschaft mit Wayve für KI-gestütztes autonomes Fahren (Level 2++) angekündigt, mit Integration in die STLA AutoDrive-Plattform und geplantem Launch 2028 in Nordamerika.",
+          "warum": "Direkter Wettbewerbs-Benchmark für VWs Transformationsstrategie: Stellantis kombiniert aggressive Produktoffensive mit KI-Partnerschaften für autonomes Fahren – relevant für Benchmarking und Strategieberatung.",
+          "quelle": "Stellantis Investor Day, 21.05.2026",
+          "url": "https://media.stellantisnorthamerica.com/newsrelease.do?id=27756&mid=1421"
+        },
+        {
+          "headline": "Automotive Workforce Reset: OEMs ersetzen IT-Stellen durch KI-native Rollen",
+          "was": "Die Automobilindustrie erlebt 2026 einen massiven Workforce Reset: GM hat 600 IT-Stellen abgebaut und rekrutiert gleichzeitig KI-native Engineers, Ford und Stellantis vollziehen ähnliche Umstrukturierungen. Die Detroit Three haben zusammen über 20.000 US-Angestelltenstellen in diesem Zyklus gestrichen – rund 19 % des White-Collar-Headcounts. Gleichzeitig steigen die Stellenausschreibungen für Prompt Engineers und Agent Developers rapide.",
+          "warum": "Signal für VWCs Upskilling- und Change-Beratung: Der Skills Swap von Legacy-IT zu KI-nativen Rollen betrifft den gesamten Automotive-Sektor und schafft Beratungsbedarf bei Workforce-Transformation und Talent-Strategie.",
+          "quelle": "Metaintro / TechCrunch Mobility, 18.05.2026",
+          "url": "https://www.metaintro.com/blog/automotive-ai-hiring-surge-2026-skills-race-carmaker-jobs"
+        },
+        {
+          "headline": "Mercedes-Benz skaliert KI-Automatisierung unternehmensweit mit n8n-Plattform",
+          "was": "Mercedes-Benz führt gemeinsam mit dem Low-Code-Spezialisten n8n eine globale Plattform ein, mit der Mitarbeitende eigene KI-gestützte Workflows entwickeln und direkt in operative Prozesse integrieren können. Ziel ist es, KI-Automatisierung von Pilotprojekten in zentrale Geschäftsprozesse zu überführen – entlang der gesamten Wertschöpfungskette von Entwicklung bis Vertrieb und IT. Die Plattform wird in einer sicheren, governance-konformen Umgebung betrieben und ermöglicht die Orchestrierung von KI-Workflows über bestehende Systeme hinweg.",
+          "warum": "Signal für die Skalierung von KI-Automatisierung im Automotive-Sektor: Mercedes verlagert KI von isolierten Use Cases in end-to-end Prozesse und befähigt Mitarbeitende, aktiv Automatisierung zu treiben. Relevant für VWCs Bewertung von Workforce Enablement, Prozessautomatisierung und europäischer Plattformstrategie.",
+          "quelle": "Mercedes-Benz Group, 12.05.2026",
+          "url": "https://group.mercedes-benz.com/technologie/digitalisierung/kuenstliche-intelligenz/ki-automatisierung.html"
+        }
+      ]
+    },
+    {
+      "cat": "4",
+      "label": "Kategorie 4",
+      "title": "KI-News aus dem Volkswagen Konzern",
+      "news": [
+        {
+          "headline": "Bosch & CARIAD: KI-basierter Automated-Driving-Stack ab Mitte 2026 serienreif",
+          "was": "Der gemeinsam von Bosch und CARIAD entwickelte End-to-End-KI-Stack für automatisiertes Fahren (Level 2/3) steht ab Mitte 2026 für Serienprojekte bereit – er wird in die neue Software-defined-Vehicle-Architektur des VW Konzerns integriert. Der Stack kombiniert Kamerasensorik mit neuronalen Netzwerken für Echtzeit-Umfeldwahrnehmung und Pfadplanung.",
+          "warum": "Zentraler Meilenstein für KI-Serieneinsatz im Konzern und Beweis, dass die deutsche Automobilindustrie KI-basiertes automatisiertes Fahren eigenständig beherrscht – relevant für Use-Case-Priorisierung in Beratungsprojekten.",
+          "quelle": "CARIAD / Bosch, 2026",
+          "url": "https://cariad.technology/de/en/news/stories/automated-driving-alliance-ai-next-level.html"
+        },
+        {
+          "headline": "VW China: Agentic AI for All – KI-Agenten ab H2 2026 serienmäßig in CEA-Modellen",
+          "was": "Ab der zweiten Jahreshälfte 2026 erhalten alle CEA-basierten China-Modelle von Volkswagen einen Onboard-KI-Agenten, der auf einem lokal trainierten Large Language Model basiert. Die China Electronic Architecture (CEA), gemeinsam mit Xpeng entwickelt, bildet die Basis für die Agentic-AI-for-All-Roadmap. Ab 2027 soll CEA 2.0 intelligentes Fahren und Cockpit in einem einheitlichen System vereinen.",
+          "warum": "Konkretes Signal für produktive Agentic-KI im Fahrzeug mit lokalem Souveränitätsansatz – direkt relevant für Strategie-, Benchmark- und Enablement-Diskussionen rund um In-Car AI und die China-Strategie des Konzerns.",
+          "quelle": "Volkswagen Group, 21.04.2026",
+          "url": "https://www.volkswagen-group.com/en/press-releases/auto-china-2026-volkswagen-group-unveils-record-product-offensive-and-agentic-ai-roadmap-for-china-20333"
+        }
+      ]
+    },
+    {
+      "cat": "5",
+      "label": "Kategorie 5",
+      "title": "KI-News aus der Forschung",
+      "news": [
+        {
+          "headline": "DeepSeek V4: Open-Weight-Modell erreicht Frontier-Niveau bei einem Siebtel der Kosten",
+          "was": "DeepSeek hat am 24. April 2026 DeepSeek V4 als Open-Weight-Modell unter MIT-Lizenz veröffentlicht: V4-Pro mit 1,6 Billionen Parametern (49 Mrd. aktiv) und V4-Flash mit 284 Mrd. Parametern (13 Mrd. aktiv). Beide unterstützen ein natives 1-Million-Token-Kontextfenster. V4-Pro erreicht auf LiveCodeBench 93,5 % und ist auf SWE-bench Verified mit Claude Opus 4.6 statistisch gleichauf – bei einem Siebtel der Kosten.",
+          "warum": "Relevant für Build-vs-Buy-Entscheidungen im Konzern: Ein Open-Weight-Modell auf Frontier-Niveau zu einem Bruchteil der Kosten verändert die Kalkulation für Self-Hosting und Datensouveränität grundlegend.",
+          "quelle": "DeepSeek / Codersera, 24.04.2026",
+          "url": "https://codersera.com/blog/deepseek-v4-complete-guide-2026/"
+        },
+        {
+          "headline": "NIST CAISI bewertet DeepSeek V4 Pro: Leistungsfähigstes China-Modell, 8 Monate hinter US-Frontier",
+          "was": "Das Center for AI Standards and Innovation (CAISI) des NIST hat DeepSeek V4 Pro über neun Benchmarks in fünf Domänen (Cyber, Software Engineering, Naturwissenschaften, abstraktes Reasoning, Mathematik) evaluiert. Ergebnis: V4 ist das leistungsfähigste chinesische Modell, liegt aber im Aggregat ca. 8 Monate hinter US-Frontier-Modellen wie GPT-5.5 und Claude Opus 4.6. Auf Kostenebene ist V4 Pro in 5 von 7 Benchmarks günstiger als GPT-5.4 mini.",
+          "warum": "Erste unabhängige US-Regierungsbewertung eines chinesischen Frontier-Modells – liefert VWC eine objektive Vergleichsbasis für die Einordnung von US- vs. China-KI-Modellen in Strategiediskussionen.",
+          "quelle": "NIST CAISI, 01.05.2026",
+          "url": "https://www.nist.gov/news-events/news/2026/05/caisi-evaluation-deepseek-v4-pro"
+        },
+        {
+          "headline": "OpenAI-Modell widerlegt 80 Jahre alte Erdős-Vermutung – erster autonomer KI-Durchbruch in der Mathematik",
+          "was": "OpenAI hat am 20. Mai 2026 bekanntgegeben, dass ein internes Reasoning-Modell die 1946 von Paul Erdős aufgestellte Unit-Distance-Vermutung in der diskreten Geometrie widerlegt hat. Das Modell fand eine unendliche Familie von Punktanordnungen, die polynomiell mehr Einheitsabstandspaare erzeugen als das bisherige Optimum. Fields-Medaillist Tim Gowers erklärte, er würde das Ergebnis ohne Zögern für die Annals of Mathematics empfehlen.",
+          "warum": "Erster Fall, in dem KI autonom ein prominentes offenes Problem in der Mathematik gelöst hat – ein Paradigmenwechsel für die Rolle von KI in der Grundlagenforschung, relevant für VWCs Einordnung des KI-Reifegrads.",
+          "quelle": "TechCrunch / OpenAI, 20.05.2026",
+          "url": "https://techcrunch.com/2026/05/20/openai-claims-it-solved-an-80-year-old-math-problem-for-real-this-time/"
+        }
+      ]
+    }
+  ]
+},
+  "v1": {
+  "headerDate": "📅 07. Mai 2026 · KW 19",
+  "footerText": "Zuletzt aktualisiert: 07. Mai 2026, 09:51 Uhr · Volkswagen Group Consulting",
+  "chips": [
+    {
+      "label": "Alle",
+      "cat": "all"
+    },
+    {
+      "label": "Übergreifend",
+      "cat": "1"
+    },
+    {
+      "label": "Beratungen",
+      "cat": "2"
+    },
+    {
+      "label": "Automotive",
+      "cat": "3"
+    },
+    {
+      "label": "VW Konzern",
+      "cat": "4"
+    }
+  ],
+  "categories": [
+    {
+      "cat": "1",
+      "label": "Kategorie 1",
+      "title": "Übergreifende KI-News",
+      "news": [
+        {
+          "headline": "Anthropic sichert sich SpaceX-Supercomputer – und plant orbitale KI-Rechenzentren",
+          "was": "Anthropic hat einen Deal mit SpaceX geschlossen, der exklusiven Zugriff auf den Colossus-1-Supercomputer (220.000+ NVIDIA GPUs, 300 MW) gewährt – zudem wurde Interesse an der gemeinsamen Entwicklung orbitaler KI-Rechenkapazitäten im Gigawatt-Bereich bekundet.",
+          "warum": "Zeigt die eskalierende Compute-Knappheit im KI-Markt und die zunehmende vertikale Integration der Foundation-Model-Anbieter – relevanter Kontext für Plattform- und Sourcing-Strategieberatung im Konzern.",
+          "quelle": "CNBC, 06.05.2026",
+          "url": "https://www.cnbc.com/2026/05/06/anthropic-spacex-data-center-capacity.html"
+        },
+        {
+          "headline": "OpenAI &amp; Anthropic gründen parallele Enterprise-JVs mit Wall-Street-Investoren",
+          "was": "OpenAI hat mit TPG, Bain Capital und Brookfield „The Deployment Company“ (4 Mrd. USD) gegründet, Anthropic parallel mit Blackstone, Goldman Sachs und Hellman &amp; Friedman ein 1,5-Mrd.-JV – beide zielen auf Enterprise-KI-Implementierung in tausenden Portfolio-Unternehmen.",
+          "warum": "KI-Labs bauen eigene Delivery-Arme auf und konkurrieren direkt mit klassischen Beratungen – VWC muss die eigene Positionierung im KI-Beratungsmarkt aktiv schärfen.",
+          "quelle": "TechCrunch, 04.05.2026",
+          "url": "https://techcrunch.com/2026/05/04/anthropic-and-openai-are-both-launching-joint-ventures-for-enterprise-ai-services/"
+        },
+        {
+          "headline": "Microsoft &amp; OpenAI beenden Cloud-Exklusivität – Multi-Cloud wird Standard",
+          "was": "Microsoft und OpenAI haben ihre Partnerschaft neu strukturiert: Azure bleibt Primary Cloud, aber OpenAI darf Produkte über alle Cloud-Anbieter ausliefern; Microsofts IP-Lizenz wird nicht-exklusiv bis 2032.",
+          "warum": "Die Verschiebung zu Multi-Cloud beeinflusst Sourcing- und Architekturstrategie in laufenden KI-Programmen – relevant für Vendor-Lock-in-Bewertung und Verhandlungshebel im Konzern.",
+          "quelle": "Microsoft Official Blog, 27.04.2026",
+          "url": "https://blogs.microsoft.com/blog/2026/04/27/the-next-phase-of-the-microsoft-openai-partnership/"
+        }
+      ]
+    },
+    {
+      "cat": "2",
+      "label": "Kategorie 2",
+      "title": "KI-News von Strategieberatungen",
+      "news": [
+        {
+          "headline": "OpenAI- und Anthropic-JVs planen Übernahmen von KI-Consulting-Firmen",
+          "was": "Die neuen Joint Ventures von OpenAI und Anthropic verhandeln laut Reuters über Akquisitionen von Engineering- und Consulting-Firmen – OpenAI in fortgeschrittenen Gesprächen für drei Deals, um hunderte Berater für Enterprise-KI-Deployment einzubinden.",
+          "warum": "KI-Labs konsolidieren den Beratungsmarkt und bauen eigene Delivery-Arme auf – direkter Wettbewerbsdruck auf klassische Beratungshäuser und strategische Implikation für VWC-Positionierung.",
+          "quelle": "Reuters, 05.05.2026",
+          "url": "https://money.usnews.com/investing/news/articles/2026-05-05/openai-anthropic-ventures-in-talks-to-buy-ai-services-firms-sources-say"
+        },
+        {
+          "headline": "Das 93/7-Problem: 93 % der KI-Budgets für Technologie, nur 7 % für Menschen",
+          "was": "Neue Deloitte-Daten zeigen, dass 93 % der globalen KI-Budgets in Technologie fließen und nur 7 % in People &amp; Change – obwohl laut BCG 70 % des KI-Werts aus Menschen und Prozessen kommt; McKinsey bestätigt, dass nur 39 % der Unternehmen messbaren EBITDA-Impact sehen.",
+          "warum": "Untermauert die VWC-Argumentation, dass KI-Beratung über Tool-Einführung hinausgehen muss – Change, Enablement und Prozessdesign sind die eigentlichen Werthebel, und genau dort liegt VWCs Stärke.",
+          "quelle": "Forbes / Deloitte / BCG, 06.05.2026",
+          "url": "https://www.forbes.com/councils/forbescoachescouncil/2026/05/06/the-937-problem-why-companies-are-spending-their-ai-budgets-backward/"
+        }
+      ]
+    },
+    {
+      "cat": "3",
+      "label": "Kategorie 3",
+      "title": "KI-News aus der Automobilindustrie",
+      "news": [
+        {
+          "headline": "Stellantis &amp; Microsoft starten 5-Jahres-Deal mit 100+ KI-Initiativen",
+          "was": "Stellantis und Microsoft haben eine fünfjährige Zusammenarbeit zur Co-Entwicklung von über 100 KI-Initiativen in Produktentwicklung, Predictive Maintenance und Cyber-Defense auf Azure vereinbart – inklusive 60 % Datacenter-Reduktion bis 2029.",
+          "warum": "Direkter Benchmark für „AI Operating Model“ im Automotive – zeigt, wie OEMs KI, Security und Cloud in ein Transformationsprogramm bündeln, relevant für Benchmarking und Angebotsgestaltung.",
+          "quelle": "Stellantis Pressemitteilung, 16.04.2026",
+          "url": "https://www.stellantis.com/en/news/press-releases/2026/april/stellantis-accelerates-ai-led-strategy-and-digital-transformation-through-strategic-collaboration-with-microsoft-to-enhance-customer-experiences"
+        },
+        {
+          "headline": "BMW startet 300-Mio.-Fund für Physical AI – Premium-OEMs skalieren KI in Produktion",
+          "was": "BMW i Ventures hat einen dritten Fonds über 300 Mio. USD für Physical AI, Agentic AI und Industriesoftware aufgelegt; parallel setzen Audi, BMW und Mercedes KI-basierte Bildverarbeitung zur Echtzeit-Fehlererkennung in der Produktion produktiv ein.",
+          "warum": "Wettbewerbsvergleich für VW-Produktionsprojekte und Signal, dass Physical AI als eigenständiges Investitionsfeld im Automotive etabliert wird – relevante Benchmarks für Beratungsmandate.",
+          "quelle": "PYMNTS / Automotive News, 01.05.2026",
+          "url": "https://www.pymnts.com/artificial-intelligence-2/2026/ai-takes-the-wheel-at-europes-biggest-carmakers/"
+        }
+      ]
+    },
+    {
+      "cat": "4",
+      "label": "Kategorie 4",
+      "title": "KI-News aus dem Volkswagen Konzern",
+      "news": [
+        {
+          "headline": "Volkswagen China bringt In-Car-KI-Agenten ab H2 2026 – On-Device-LLM mit Horizon Robotics",
+          "was": "Volkswagen hat auf der Auto China 2026 KI-Agenten für den chinesischen Markt angekündigt, die Fahrzeugfunktionen per Sprache steuern – entwickelt über das JV CARIZON mit Horizon Robotics, Rollout in der zweiten Jahreshälfte 2026.",
+          "warum": "Konkretes Signal für produktive Agentic-KI im Fahrzeug mit lokalem Souveränitätsansatz – relevant für Strategie-, Benchmark- und Enablement-Diskussionen rund um In-Car AI im Konzern.",
+          "quelle": "CNBC, 21.04.2026",
+          "url": "https://www.cnbc.com/2026/04/21/volkswagen-ai-agents-china-cars.html"
+        },
+        {
+          "headline": "Bosch &amp; CARIAD: KI-basierter Automated-Driving-Stack ab Mitte 2026 serienreif",
+          "was": "Der gemeinsam von Bosch und CARIAD entwickelte End-to-End-KI-Stack für automatisiertes Fahren (Level 2/3) steht ab Mitte 2026 für Serienprojekte bereit – er wird in die neue Software-defined-Vehicle-Architektur des VW Konzerns integriert.",
+          "warum": "Zentraler Meilenstein für KI-Serieneinsatz im Konzern und Beweis, dass die deutsche Automobilindustrie KI und automatisiertes Fahren eigenständig beherrscht – relevant für Use-Case-Priorisierung in Beratungsprojekten.",
+          "quelle": "Volkswagen Group / CARIAD, 2026",
+          "url": "https://cariad.technology/de/en/news/stories/automated-driving-alliance-ai-next-level.html"
+        }
+      ]
+    }
+  ]
+},
+  "v2": {
+  "headerDate": "📅 12. Mai 2026 · KW 20",
+  "footerText": "Zuletzt aktualisiert: 12. Mai 2026, 17:17 Uhr · Volkswagen Group Consulting",
+  "chips": [
+    {
+      "label": "Alle",
+      "cat": "all"
+    },
+    {
+      "label": "Übergreifend",
+      "cat": "1"
+    },
+    {
+      "label": "Beratungen",
+      "cat": "2"
+    },
+    {
+      "label": "Automotive",
+      "cat": "3"
+    },
+    {
+      "label": "VW Konzern",
+      "cat": "4"
+    },
+    {
+      "label": "Forschung",
+      "cat": "5"
+    }
+  ],
+  "categories": [
+    {
+      "cat": "1",
+      "label": "Kategorie 1",
+      "title": "Übergreifende KI-News",
+      "news": [
+        {
+          "headline": "OpenAI &amp; Microsoft deckeln Erlös-Beteiligung bei 38 Mrd. USD – Ende des Lock-in?",
+          "was": "OpenAI und Microsoft begrenzen die laufenden Erlös-Zahlungen auf maximal 38 Mrd. USD bis 2030. Microsoft behält bis 2032 eine nicht-exklusive Lizenz auf OpenAIs Modelle, ChatGPT-Funktionen können künftig auch über AWS und Google Cloud verfügbar werden.",
+          "warum": "Signal gegen Vendor-Lock-in – relevant für VWCs Sourcing-Strategie und die Bewertung von Cloud- und KI-Plattform-Abhängigkeiten in Beratungsmandaten.",
+          "quelle": "Reuters / The Information, 12.05.2026",
+          "url": "https://digioneer.pro/news/ki-news-12-mai-2026/"
+        },
+        {
+          "headline": "Cerebras peilt 4,8 Mrd. USD Börsengang an – größter Tech-IPO 2026",
+          "was": "KI-Chiphersteller Cerebras Systems hat seinen Börsengang auf 30 Mio. Aktien zu 150–160 USD angehoben – bis zu 4,8 Mrd. USD Erlös. Erstkurs am 14.05. unter dem Kürzel CBRS, größter Tech-Börsengang weltweit in diesem Jahr.",
+          "warum": "Zeigt die wachsende Investorenbereitschaft für KI-Hardware-Alternativen zu NVIDIA – relevanter Kontext für Infrastruktur- und Chip-Strategiediskussionen im Konzern.",
+          "quelle": "Dow Jones / Digioneer, 12.05.2026",
+          "url": "https://digioneer.pro/news/ki-news-12-mai-2026/"
+        },
+        {
+          "headline": "Isomorphic Labs sichert sich 2,1 Mrd. USD Series B für KI-gestütztes Drug Design",
+          "was": "Die Alphabet-Tochter Isomorphic Labs hat 2,1 Mrd. USD in einer Series-B-Runde eingeworben – angeführt von Thrive Capital, mit Beteiligung von Temasek, MGX und dem UK Sovereign AI Fund. Das Kapital fließt in den KI-Drug-Design-Engine IsoDDE und den Aufbau einer klinischen Pipeline.",
+          "warum": "Zeigt, wie KI-Forschung aus dem Alphabet-Ökosystem in hochskalierbare Geschäftsmodelle überführt wird – relevant für F&amp;E-Strategie und Innovationsberatung im Konzern.",
+          "quelle": "PR Newswire, 12.05.2026",
+          "url": "https://www.finanznachrichten.de/nachrichten-2026-05/68471918-isomorphic-labs-secures-dollar-2-1-billion-funding-to-scale-its-ai-drug-design-engine-008.htm"
+        }
+      ]
+    },
+    {
+      "cat": "2",
+      "label": "Kategorie 2",
+      "title": "KI-News von Strategieberatungen",
+      "news": [
+        {
+          "headline": "Deloitte State of AI 2026: Nur 34 % der Unternehmen transformieren wirklich mit KI",
+          "was": "Deloittes Enterprise-AI-Report 2026 zeigt: Der Zugang zu KI am Arbeitsplatz stieg 2025 um 50 %, doch nur 34 % der Unternehmen gestalten ihr Geschäftsmodell wirklich mit KI um. 84 % haben Arbeitsplätze noch nicht um KI-Fähigkeiten herum redesignt. Agentic AI soll in zwei Jahren stark zunehmen, aber nur jedes fünfte Unternehmen hat ein Governance-Modell dafür.",
+          "warum": "Untermauert VWCs Beratungsansatz: KI-Wert entsteht nicht durch Tool-Einführung, sondern durch Prozess-Redesign, Change und Governance – genau VWCs Kernkompetenz.",
+          "quelle": "Deloitte, 2026",
+          "url": "https://www.deloitte.com/us/en/what-we-do/capabilities/applied-artificial-intelligence/content/state-of-ai-in-the-enterprise.html"
+        },
+        {
+          "headline": "BCG: 70 % des KI-Werts kommt von Menschen – nur 5 % der Firmen erzielen substanzielle Gewinne",
+          "was": "BCGs Build for the Future x AI 2025 Study zeigt: Nur ~5 % der Organisationen erzielen substanzielle finanzielle Gewinne aus KI. 70 % des KI-Werts stammen aus People &amp; Prozessen, nur 10 % aus Algorithmen. Zukunftsfähige Unternehmen planen, über 50 % ihrer Belegschaft in KI weiterzubilden.",
+          "warum": "Bestätigt VWCs Positionierung als Change- und Enablement-Partner: Der Hebel liegt nicht in der Technologie, sondern in Upskilling, Prozess-Redesign und Leadership-Alignment.",
+          "quelle": "BCG, Februar 2026",
+          "url": "https://www.bcg.com/publications/2026/ai-transformation-is-a-workforce-transformation"
+        },
+        {
+          "headline": "McKinsey AI Trust 2026: Agentic AI erzwingt neue Governance-Dimension",
+          "was": "McKinseys 2026 AI Trust Maturity Survey (500 Organisationen) zeigt: AI Trust ist keine Nebensache mehr, sondern Grundvoraussetzung für skalierten KI-Einsatz. Erstmals wurde Agentic AI Governance als eigene Dimension aufgenommen – Organisationen müssen nicht nur kontrollieren, was KI sagt, sondern was sie tut.",
+          "warum": "Direkt relevant für VWCs Governance-Beratung: Agentic AI erfordert neue Kontrollmechanismen, die über klassische RAI-Frameworks hinausgehen – ein wachsendes Beratungsfeld.",
+          "quelle": "McKinsey, März 2026",
+          "url": "https://www.mckinsey.com/capabilities/tech-and-ai/our-insights/tech-forward/state-of-ai-trust-in-2026-shifting-to-the-agentic-era"
+        }
+      ]
+    },
+    {
+      "cat": "3",
+      "label": "Kategorie 3",
+      "title": "KI-News aus der Automobilindustrie",
+      "news": [
+        {
+          "headline": "Beijing Auto Show 2026: Rekordfläche, 1,28 Mio. Besucher – KI und E-Mobilität dominieren",
+          "was": "Die Auto China 2026 schloss mit Rekordzahlen: 380.000 m² Ausstellungsfläche, 1,28 Mio. Besucher, 181 Debüt-Modelle. KI-Großmodelle, LiDAR als Standard und Level-3-Autonomie prägten die Messe. Batterien mit über 400 Wh/kg und BYDs 9-Minuten-Schnellladung setzten neue Benchmarks.",
+          "warum": "Zeigt das Innovationstempo chinesischer OEMs bei KI und E-Mobilität – zentrale Benchmark für VW-Strategie in China und relevanter Kontext für Wettbewerbsanalysen.",
+          "quelle": "CnEVPost, 04.05.2026",
+          "url": "https://cnevpost.com/2026/05/04/beijing-auto-show-highlights-accelerated-shift-to-smart-evs/"
+        },
+        {
+          "headline": "Nuro erhält Kalifornien-Genehmigung – Robotaxi-Launch mit Uber und Lucid rückt näher",
+          "was": "Nuro hat eine CPUC Drivered Pilot Permit für Kalifornien erhalten und darf nun Passagier-Robotaxi-Dienste auf öffentlichen Straßen testen. In Kombination mit der DMV Driverless Testing Permit ist Nuro eines von nur fünf Unternehmen mit beiden Genehmigungen – der geplante Uber-Lucid-Robotaxi-Service nimmt Gestalt an.",
+          "warum": "Zeigt die Beschleunigung der Robotaxi-Kommerzialisierung in den USA – relevanter Benchmark für VWs eigene Autonomie-Strategie und potenzielle Partnerschaften.",
+          "quelle": "AutoConnectedCar, 10.05.2026",
+          "url": "https://www.autoconnectedcar.com/2026/05/autonomous-self-driving-vehicle-news-nuro-uber-lucid-aurora-innoviz-aeva-daimler-volvo-ouster-hpe-kodiak-ai/"
+        }
+      ]
+    },
+    {
+      "cat": "4",
+      "label": "Kategorie 4",
+      "title": "KI-News aus dem Volkswagen Konzern",
+      "news": [
+        {
+          "headline": "VW enthüllt größte Produktoffensive in China – Agentic AI Roadmap bis 2030",
+          "was": "Auf der Auto China 2026 stellte der VW-Konzern vier Weltpremieren vor und kündigte über 20 elektrifizierte Fahrzeuge allein für 2026 an (50 Modelle bis 2030). Ab H2 2026 erhalten alle CEA-basierten China-Modelle einen Onboard-KI-Agenten. CEO Blume: „China is a key driver of our transformation.“",
+          "warum": "Zentrales strategisches Signal für Agentic AI im Konzern – direkt relevant für Enablement-, Strategie- und Benchmark-Diskussionen rund um In-Car AI und die China-Strategie.",
+          "quelle": "Volkswagen Group, 21.04.2026",
+          "url": "https://www.volkswagen-group.com/en/press-releases/auto-china-2026-volkswagen-group-unveils-record-product-offensive-and-agentic-ai-roadmap-for-china-20333"
+        },
+        {
+          "headline": "Bosch &amp; CARIAD: KI-basierter Automated-Driving-Stack ab Mitte 2026 serienreif",
+          "was": "Der gemeinsam von Bosch und CARIAD entwickelte End-to-End-KI-Stack für automatisiertes Fahren (Level 2/3) steht ab Mitte 2026 für Serienprojekte bereit – er wird in die neue Software-defined-Vehicle-Architektur des VW Konzerns integriert.",
+          "warum": "Zentraler Meilenstein für KI-Serieneinsatz im Konzern und Beweis, dass die deutsche Automobilindustrie KI und automatisiertes Fahren eigenständig beherrscht – relevant für Use-Case-Priorisierung in Beratungsprojekten.",
+          "quelle": "Volkswagen Group / CARIAD, 2026",
+          "url": "https://cariad.technology/de/en/news/stories/automated-driving-alliance-ai-next-level.html"
+        }
+      ]
+    },
+    {
+      "cat": "5",
+      "label": "Kategorie 5",
+      "title": "KI-News aus der Forschung",
+      "news": [
+        {
+          "headline": "Stanford HAI AI Index 2026: KI-Performance explodiert – SWE-Bench von 4,4 % auf 71,7 %",
+          "was": "Der Stanford HAI AI Index Report 2026 dokumentiert: KI-Benchmark-Scores steigen rapide – auf SWE-Bench stieg die Performance von 4,4 % (2023) auf 71,7 % (2025). 78 % aller Foundation Models kommen aus der Industrie; die USA führen bei Modellen, China bei Patenten. 88 % der befragten Unternehmen setzen KI ein, aber nur 21 % breit skaliert.",
+          "warum": "Der jährliche Stanford-Report ist der globale Benchmark-Standard für den KI-Reifegrad – zentral für VWCs Einordnung von Technologie-Trends und die Argumentation in Strategiemandaten.",
+          "quelle": "Stanford HAI, April 2026",
+          "url": "https://aiindex.stanford.edu/report/"
+        },
+        {
+          "headline": "Sakana AI publiziert in Nature: Erstes vollautomatisches KI-System schreibt wissenschaftliche Paper",
+          "was": "Das japanische Forschungslabor Sakana AI hat mit „The AI Scientist“ die erste Nature-Publikation vorgelegt, die vollständig von einem KI-System konzipiert, experimentiert und verfasst wurde. Das System generiert Hypothesen, designt Experimente, analysiert Daten und schreibt den Artikel autonom.",
+          "warum": "Paradigmenwechsel für F&amp;E-Prozesse – zeigt, dass KI nicht nur assistiert, sondern eigenständig Forschung betreiben kann. Relevant für VWCs Beratung zu KI-gestützter Innovation und R&amp;D-Transformation.",
+          "quelle": "Nature / Sakana AI, März 2026",
+          "url": "https://sakana.ai/ai-scientist/"
+        },
+        {
+          "headline": "ICML 2026 Seoul: Rekord mit 6.352 akzeptierten Papers – Agentic AI dominiert Forschung",
+          "was": "Die International Conference on Machine Learning (ICML) 2026 in Seoul verzeichnete 23.918 Einreichungen und akzeptierte 6.352 Papers (26,6 % Acceptance Rate) – ein neuer Rekord. Dominante Themen: Agentic AI, Multi-Agent-Systeme, LLM Alignment &amp; Safety sowie KI für Scientific Discovery.",
+          "warum": "ICML ist die globale Leitkonferenz für ML-Forschung – die thematischen Schwerpunkte geben VWC einen Frühindikator für kommende KI-Fähigkeiten und Beratungsfelder.",
+          "quelle": "ICML 2026, Mai 2026",
+          "url": "https://icml.cc/Conferences/2026"
+        }
+      ]
+    }
+  ]
+}
+};
+
+var activeCategory = 'all';
+
+function switchVersion(v) {
+  activeCategory = 'all';
+  document.getElementById('searchInput').value = '';
+  renderVersion(v);
+}
+
+function renderVersion(v) {
+  var ver = VERSIONS[v];
+  document.getElementById('headerDate').innerHTML = ver.headerDate;
+  document.getElementById('footerText').innerHTML = ver.footerText;
+
+  var html = '';
+  for (var i = 0; i < ver.chips.length; i++) {
+    var c = ver.chips[i];
+    var act = (c.cat === activeCategory) ? ' active' : '';
+    html += '<span class="chip' + act + '" data-cat="' + c.cat + '" onclick="filterCategory(\'' + c.cat + '\',this)">' + c.label + '</span>';
+  }
+  document.getElementById('filterChips').innerHTML = html;
+
+  var cats = ver.categories;
+  var out = '';
+  for (var j = 0; j < cats.length; j++) {
+    var cat = cats[j];
+    var fw = (cats.length % 2 === 1 && j === cats.length - 1) ? ' full-width' : '';
+    out += '<div class="category-card' + fw + '" data-cat="' + cat.cat + '">';
+    out += '<div class="card-header">';
+    out += '<div class="card-label">' + cat.label + '</div>';
+    out += '<div class="card-title">' + cat.title + '</div>';
+    out += '<div class="card-count">' + cat.news.length + ' News</div>';
+    out += '</div>';
+    out += '<div class="card-body">';
+    for (var k = 0; k < cat.news.length; k++) {
+      var n = cat.news[k];
+      out += '<div class="news-item">';
+      out += '<div class="news-headline">' + n.headline + '</div>';
+      out += '<div class="news-field"><span class="label">Was ist passiert:</span> ' + n.was + '</div>';
+      out += '<div class="news-field"><span class="label">Warum relevant f\u00fcr VWC:</span> ' + n.warum + '</div>';
+      out += '<div class="news-source"><span class="label">Quelle:</span> <a href="' + n.url + '" target="_blank" rel="noopener noreferrer">' + n.quelle + '</a></div>';
+      out += '</div>';
+    }
+    out += '</div></div>';
+  }
+  document.getElementById('dashboard').innerHTML = out;
+}
+
+function filterCategory(cat, el) {
+  activeCategory = cat;
+  var chips = document.querySelectorAll('.chip');
+  for (var i = 0; i < chips.length; i++) { chips[i].className = 'chip'; }
+  el.className = 'chip active';
+  applyFilters();
+}
+
+function applyFilters() {
+  var q = document.getElementById('searchInput').value.toLowerCase();
+  var cards = document.querySelectorAll('.category-card');
+  for (var c = 0; c < cards.length; c++) {
+    var card = cards[c];
+    var cat = card.getAttribute('data-cat');
+    var catMatch = activeCategory === 'all' || cat === activeCategory;
+    if (!catMatch) { card.style.display = 'none'; continue; }
+    var items = card.querySelectorAll('.news-item');
+    var anyVisible = false;
+    for (var i = 0; i < items.length; i++) {
+      var text = items[i].textContent.toLowerCase();
+      var match = !q || text.indexOf(q) >= 0;
+      items[i].style.display = match ? '' : 'none';
+      if (match) anyVisible = true;
+    }
+    card.style.display = anyVisible ? '' : 'none';
+  }
+}
+
+renderVersion('v5');
+
+</script>
+</body>
+</html>
